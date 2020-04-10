@@ -1,0 +1,12 @@
+{
+  "name": "server",
+  "description": "Server side for Spotify Party.",
+  "version": "0.0.1",
+  "dependencies": {
+    "cookie-parser": "^1.4.5",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "querystring": "~0.2.0",
+    "request": "~2.34.0"
+  }
+}
