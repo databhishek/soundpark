@@ -1,6 +1,7 @@
-const request = require('request');
-const querystring = require('querystring');
 require('dotenv').config({ path: '../.env' });
+const request = require('request');
+const db = require('../conn');
+const querystring = require('querystring');
 
 var stateKey = 'spotify_auth_state';
 
@@ -19,7 +20,6 @@ var generateRandomString = (length) => {
 exp.login = (req, res) => {
 	var state = generateRandomString(16);
 	res.cookie(stateKey, state);
-
 	// your application requests authorization
 	var scope = 'user-read-private user-read-email user-read-playback-state user-modify-playback-state user-read-currently-playing playlist-modify-public user-read-playback-position';
 	res.redirect('https://accounts.spotify.com/authorize?' +
@@ -64,12 +64,21 @@ exp.callback = (req, res) => {
 				var access_token = body.access_token;
 				var refresh_token = body.refresh_token;
 
+
+				db.User.findOneAndUpdate(
+					{ username: 'abhishek' },
+					{ $set: { spotifyAccessToken: access_token, spotifyRefreshToken: refresh_token }}
+				).then((resp) => {
+					console.log(resp);
+				});
+
 				var options = {
-				url: 'https://api.spotify.com/v1/me',
-				headers: { 'Authorization': 'Bearer ' + access_token },
-				json: true
+					url: 'https://api.spotify.com/v1/me',
+					headers: { 'Authorization': 'Bearer ' + access_token },
+					json: true
 				};
 				
+
 				// use the access token to access the Spotify Web API
 				request.get(options, function(error, response, body) {
 				console.log(body);
@@ -115,5 +124,22 @@ exp.refresh_token = (req, res) => {
 	});
 };
 
+exp.setUsername = (req, res) => {
+	try {
+		const userDbEntry = {};
+		userDbEntry.username = req.body.username;
+
+		let createdUser = db.User.create(userDbEntry, (err, createdUser) => {
+			console.log(createdUser);
+			res.json({
+				status: 200,
+				data: 'Username set!'
+			});
+		});
+	}
+	catch(err) {
+		console.log(err);
+	}
+};
 
 module.exports = exp;

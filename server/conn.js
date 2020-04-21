@@ -1,10 +1,10 @@
 const mongoose = require('mongoose')
 
-mongoose.connect('mongodb://localhost:27017/spotify', { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect('mongodb://localhost/spotify', { useNewUrlParser: true, useUnifiedTopology: true })
 
 
 mongoose.connection.on('connected', () => {
-  console.log('Mongoose is connected')
+  console.log('Mongoose is connected.')
 })
 
 mongoose.connection.on('error', (err) => {
@@ -12,13 +12,13 @@ mongoose.connection.on('error', (err) => {
 })
 
 mongoose.connection.on('disconnected', () => {
-  console.log('Mongoose is disconnected')
+  console.log('Mongoose is disconnected.')
 })
 
 let exp = {}
 
 const UserSchema = new mongoose.Schema({
-  username: String,
+  username: { type: String, unique: true },
   spotifyID: String,
   spotifyAccessToken: String,
   spotifyRefreshToken: String
