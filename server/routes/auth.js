@@ -2,6 +2,7 @@ require('dotenv').config();
 const request = require('request');
 const db = require('../conn');
 const querystring = require('querystring');
+const spotify = require('./spotify');
 
 var stateKey = 'spotify_auth_state';
 
@@ -67,10 +68,18 @@ exp.callback = (req, res) => {
 
 				db.User.findOneAndUpdate(
 					{ username: 'abhishek' },
-					{ $set: { spotifyAccessToken: access_token, spotifyRefreshToken: refresh_token }}
-				).then((resp) => {
+					{ $set: 
+						{ spotifyAccessToken: access_token, spotifyRefreshToken: refresh_token }
+					},
+					{
+						upsert: true
+					}
+				)
+				.then((resp) => {
 					console.log(resp);
 				});
+
+				spotify.setTokens();
 
 				var options = {
 					url: 'https://api.spotify.com/v1/me',

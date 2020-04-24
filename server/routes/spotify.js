@@ -4,15 +4,18 @@ require('dotenv').config();
 
 var spotifyApi = new SpotifyWebApi();
 
-db.User.findOne(
-  { username: 'abhishek' },
-  (err, resp) => {
-    spotifyApi.setAccessToken(resp.spotifyAccessToken);
-    spotifyApi.setRefreshToken(resp.spotifyRefreshToken);
-  }
-);
 
 let exp = {};
+
+exp.setTokens = () => {
+	db.User.findOne(
+		{ username: 'abhishek' },
+		(err, resp) => {
+		  spotifyApi.setAccessToken(resp.spotifyAccessToken);
+		  spotifyApi.setRefreshToken(resp.spotifyRefreshToken);
+		}
+	);
+}
 
 exp.playNextSong = async(req, res) => {
 	try {
