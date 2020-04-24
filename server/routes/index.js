@@ -13,6 +13,7 @@ router.get('/playNext', spotify.playNextSong);
 router.get('/playPrev', spotify.playPrevSong);
 router.get('/currentlyPlaying', spotify.getCurrentlyPlaying);
 router.get('/searchTrack', spotify.searchTrack);
+router.post('/addToQueue', spotify.addToQueue);
 
 // Auth Routes
 router.get('/spotify/login', auth.login)

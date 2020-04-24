@@ -21,7 +21,7 @@ export class Player extends Component {
 		const url = 'http://localhost:8888/currentlyPlaying';
 		try {
 			let resp = await Axios.get(url);
-			console.log(resp);
+			//console.log(resp);
 			resp = resp.data.body;
 
 			if(resp.item) {	

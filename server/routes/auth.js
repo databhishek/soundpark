@@ -39,7 +39,9 @@ exp.callback = (req, res) => {
 	
 	var code = req.query.code || null;
 	var state = req.query.state || null;
+	var username = req.query.username || null;
 	var storedState = req.cookies ? req.cookies[stateKey] : null;
+
 	if (state === null || state !== storedState) {
 		res.redirect('/#' +
 		querystring.stringify({
@@ -144,6 +146,7 @@ exp.uLogin = async(req, res) => {
 				data: 'Username set!'
 			});
 		});
+
 	}
 	catch(err) {
 		console.log(err);

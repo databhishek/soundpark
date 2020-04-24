@@ -9,11 +9,12 @@ export class Login extends Component {
         }
     }
 
+    onChange = (e) => this.setState({ username: e.target.value });
+
     handleSubmit = (e) => {
         e.preventDefault();
-        this.setState({ username: e.target.uname.value });
-        console.log(this.state.username);
         this.props.userLogin(this.state.username);
+        this.setState({ username: '' });
     }
 
 
@@ -24,8 +25,8 @@ export class Login extends Component {
         }
         else {
             login = (
-                <form onSubmit={ this.handleSubmit }>
-                    <input type='text' name='uname'></input>
+                <form ref='loginForm' onSubmit={ this.handleSubmit }>
+                    <input type='text' name='uname' value={this.state.username} onChange={this.onChange}></input>
                     <button id='uname' type='submit'>
                         Set Username and Login
                     </button>

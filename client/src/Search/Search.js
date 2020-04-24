@@ -36,6 +36,24 @@ export class Search extends Component {
         });
     }
 
+    addToQueue = async() => {
+        const url = 'http://localhost:8888/addToQueue';
+        const searchResult = this.state.searchResult;
+        let track = {
+            name: searchResult.name,
+            artist: searchResult.artist,
+            album: searchResult.album, //currently just album name
+            uri: searchResult.uri
+        };
+        try {
+            let resp = await Axios.post(url, {track});
+            console.log(resp);
+        } catch(e) {
+            console.log(e);
+        }
+
+    }
+
     handleSearch = async(e) => {
 		e.preventDefault();
 		this.setState({searchValue: e.target.searchValue.value}, this.searchSong);
@@ -51,6 +69,9 @@ export class Search extends Component {
                     <p>Name: {name}</p>
                     <p>Artist: {artist}</p>
                     <p>Album: {album}</p>
+                    <button onClick={ this.addToQueue }>
+                        Add to Queue
+                    </button>
                 </div>
             );
         }

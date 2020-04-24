@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import queryString from "query-string";
 import Axios from "axios";
 import "./App.css";
 import Login from "./Login/Login";
@@ -11,7 +10,7 @@ class App extends Component {
     super(props);
 
     this.state = {
-      uname: "",
+      uname: '',
       isUserAuthorized: false,
 	};
 
@@ -24,7 +23,6 @@ class App extends Component {
 
   userLogin = (username) => {
     const url = "http://localhost:8888/login";
-    console.log(username);
     this.setState({ uname: username }, () => {
     	Axios.post(url, username)
         .then((res) => {
