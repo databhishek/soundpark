@@ -19,7 +19,7 @@ export class Login extends Component {
 
     render() {
         let login;
-        if(this.props.auth) {
+        if(this.props.auth === true) {
             login = <h2>Welcome!</h2>;
         }
         else {

@@ -14,7 +14,7 @@ class App extends Component {
       uname: "",
       isUserAuthorized: false,
 	};
-	
+
 	sessionStorage.setItem('isLoggedIn', false);
   }
 

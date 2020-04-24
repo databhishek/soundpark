@@ -28,7 +28,8 @@ const UserSchema = new mongoose.Schema({
 const QueueSchema = new mongoose.Schema({
   trackName: String,
   artist: String,
-  albumArt: String
+  albumArt: String,
+  uri: String
 })
 
 exp.User = mongoose.model('User', UserSchema)

@@ -1,5 +1,5 @@
-const db = require('../conn')
-require('dotenv').config({ path: '../.env' })
+const db = require('../conn');
+require('dotenv').config();
 
 let exp = {}
 
@@ -59,4 +59,4 @@ exp.showAll = async (req, res) => {
     return res.json(obj)
 }
 
-module.exports = exp
+module.exports = exp;

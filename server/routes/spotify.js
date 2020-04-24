@@ -19,6 +19,7 @@ exp.playNextSong = async(req, res) => {
 		await spotifyApi.skipToNext();
 	} catch(e) {
 		console.log(e);
+		return res.send(e);
 	}
 	res.send(null).status(200);
 };
@@ -28,6 +29,7 @@ exp.playPrevSong = async(req, res) => {
 		await spotifyApi.skipToPrevious();
 	} catch(e) {
 		console.log(e);
+		return res.send(e);
 	}
 	res.send(null).status(200);
 };
@@ -39,6 +41,7 @@ exp.getCurrentlyPlaying = async(req, res) => {
 		console.log(resp.body);
 	} catch(e) {
 		console.log(e);
+		return res.send(e);
 	}
     res.send(resp).status(200);
 }
@@ -50,8 +53,10 @@ exp.searchTrack = async(req, res) => {
 		console.log(resp);
 	} catch(e) {
 		console.log(e);
+		return res.send(e);
 	}
 	res.send(resp).status(200);
 }
+
 
 module.exports = exp;
