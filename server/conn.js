@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 
 mongoose.connect('mongodb://localhost/spotify', { useNewUrlParser: true, useUnifiedTopology: true })
 
+mongoose.set('useCreateIndex', true);
 
 mongoose.connection.on('connected', () => {
   console.log('Mongoose is connected.')

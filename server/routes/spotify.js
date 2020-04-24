@@ -1,6 +1,6 @@
 var SpotifyWebApi = require('spotify-web-api-node');
 const db = require('../conn');
-require('dotenv').config({ path: '../.env' });
+require('dotenv').config();
 
 var spotifyApi = new SpotifyWebApi();
 
@@ -15,29 +15,43 @@ db.User.findOne(
 let exp = {};
 
 exp.playNextSong = async(req, res) => {
-  spotifyApi.skipToNext().then((resp) => {
-    console.log(resp);
-  });
+	try {
+		await spotifyApi.skipToNext();
+	} catch(e) {
+		console.log(e);
+	}
+	res.send(null).status(200);
 };
 
 exp.playPrevSong = async(req, res) => {
-  spotifyApi.skipToPrevious().then((resp) => {
-    console.log(resp);
-  });
+	try {
+		await spotifyApi.skipToPrevious();
+	} catch(e) {
+		console.log(e);
+	}
+	res.send(null).status(200);
 };
 
 exp.getCurrentlyPlaying = async(req, res) => {
-  spotifyApi.getMyCurrentPlaybackState().then((resp) => {
-    console.log(resp.body);
-    res.send(resp.body).status(200);
-  });
+	let resp;
+	try {
+		resp = await spotifyApi.getMyCurrentPlaybackState();
+		console.log(resp.body);
+	} catch(e) {
+		console.log(e);
+	}
+    res.send(resp).status(200);
 }
 
 exp.searchTrack = async(req, res) => {
-  console.log(req.query.searchValue);
-  spotifyApi.searchTracks(req.query.searchValue).then((resp) => {
-    console.log(resp.body);
-    res.send(resp.body).status(200);
-  });
+	let resp;
+	try {
+		resp = await spotifyApi.searchTracks(req.query.searchValue);
+		console.log(resp);
+	} catch(e) {
+		console.log(e);
+	}
+	res.send(resp).status(200);
 }
+
 module.exports = exp;

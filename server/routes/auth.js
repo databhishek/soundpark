@@ -1,4 +1,4 @@
-require('dotenv').config({ path: '../.env' });
+require('dotenv').config();
 const request = require('request');
 const db = require('../conn');
 const querystring = require('querystring');
@@ -21,7 +21,7 @@ exp.login = (req, res) => {
 	var state = generateRandomString(16);
 	res.cookie(stateKey, state);
 	// your application requests authorization
-	var scope = 'user-read-private user-read-email user-read-playback-state user-modify-playback-state user-read-currently-playing playlist-modify-public user-read-playback-position';
+	var scope = 'user-read-private user-read-email user-read-playback-state user-modify-playback-state user-read-currently-playing playlist-modify-public user-read-playback-position streaming';
 	res.redirect('https://accounts.spotify.com/authorize?' +
 		querystring.stringify({
 		response_type: 'code',
@@ -87,8 +87,7 @@ exp.callback = (req, res) => {
 				// we can also pass the token to the browser to make requests from there
 				res.redirect('http://localhost:3000/?' +
 				querystring.stringify({
-					access_token: access_token,
-					refresh_token: refresh_token
+					authorized: true
 				}));
 			} else {
 				res.redirect('/#' +
@@ -124,12 +123,12 @@ exp.refresh_token = (req, res) => {
 	});
 };
 
-exp.setUsername = (req, res) => {
+exp.uLogin = async(req, res) => {
 	try {
 		const userDbEntry = {};
 		userDbEntry.username = req.body.username;
 
-		let createdUser = db.User.create(userDbEntry, (err, createdUser) => {
+		await db.User.create(userDbEntry, (err, createdUser) => {
 			console.log(createdUser);
 			res.json({
 				status: 200,

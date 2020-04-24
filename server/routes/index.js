@@ -6,7 +6,7 @@ const spotify = require('./spotify');
 const router = express.Router();
 
 // Login Routes
-router.post('/set_uname', auth.setUsername);
+router.post('/login', auth.uLogin);
 
 // Spotify Routes
 router.get('/playNext', spotify.playNextSong);
@@ -15,7 +15,7 @@ router.get('/currentlyPlaying', spotify.getCurrentlyPlaying);
 router.get('/searchTrack', spotify.searchTrack);
 
 // Auth Routes
-router.get('/login', auth.login)
+router.get('/spotify/login', auth.login)
 router.get('/callback', auth.callback)
 router.get('/refresh_token', auth.refresh_token)
 
