@@ -64,7 +64,7 @@ exp.searchTrack = async(req, res) => {
 }
 
 exp.addToQueue = async(req, res) => {
-	let respSpotify, Q, resp;
+	let respSpotify, Q, resp, present;
 	let songToAdd = req.body.track;
 	try {	
 		respSpotify = await spotifyApi.getMyCurrentPlaybackState();
@@ -80,6 +80,12 @@ exp.addToQueue = async(req, res) => {
 		Q = await db.Queue.find(null, 'uri');
 		Q = Q.map(song => song.uri);
 		console.log(Q);
+		present = Q.find((uri) => {
+			return uri === respSpotify.uri;
+		});
+		if(present === undefined) {
+			Q.unshift(respSpotify.uri);
+		}
 		resp = await spotifyApi.play(
 			{
 				uris: Q,
