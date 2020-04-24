@@ -18,7 +18,6 @@ exp.setTokens = () => {
 	);
 }
 
-exp.setTokens();
 
 exp.playNextSong = async(req, res) => {
 	try {
