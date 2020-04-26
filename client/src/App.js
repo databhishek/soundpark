@@ -1,86 +1,50 @@
-import React, { Component } from 'react';
-import './App.css';
-import queryString from 'query-string';
-import SpotifyWebApi from 'spotify-web-api-js';
-const spotifyApi = new SpotifyWebApi();
+import React, { Component } from "react";
+import Axios from "axios";
+import "./App.css";
+import Login from "./Login/Login";
+import Player from "./Player/Player";
+import Search from "./Search/Search";
 
 class App extends Component {
-  constructor() {
-	super();
-	const urlParams = queryString.parse(window.location.search);
-	const isUserAuthorized = urlParams.access_token ? true : false;
-	if(isUserAuthorized) {
-		spotifyApi.setAccessToken(urlParams.access_token);
-	}
-	this.state = {
-	  isUserAuthorized,
-	  nowPlaying : {
-		name: 'Not Checked',
-		albumArt: ''
-	  }
-	}
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      uname: '',
+      isUserAuthorized: false,
+	};
+
+	sessionStorage.setItem('isLoggedIn', false);
   }
 
   componentDidMount() {
-	const { isUserAuthorized } = this.state;
-	if(isUserAuthorized) {
-	  this.getNowPlaying();
-	}
+    this.setState({ isUserAuthorized: sessionStorage.getItem('isLoggedIn')});
   }
 
-  getNowPlaying() {
-    spotifyApi.getMyCurrentPlaybackState()
-    .then((resp) => {
-      this.setState({
-        nowPlaying: {
-          name: resp.item.name,
-          albumArt: resp.item.album.images[0].url
-        }
-      });
+  userLogin = (username) => {
+    const url = "http://localhost:8888/login";
+    this.setState({ uname: username }, () => {
+    	Axios.post(url, username)
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((e) => {
+          console.log(e);
+		});
+		sessionStorage.setItem('isLoggedIn', true);
     });
-  }
-
-  playNextSong() {
-    spotifyApi.skipToNext()
-    .then((resp) => {
-      this.getNowPlaying();
-    });
-  }
-
-  playPrevSong() {
-    spotifyApi.skipToPrevious()
-    .then((resp) => {
-      this.getNowPlaying();
-    });
-  }
+    window.location.assign("http://localhost:8888/spotify/login");
+  };
 
   render() {
-	const { isUserAuthorized, nowPlaying } = this.state;
-	const connectSpotify = isUserAuthorized ? ('') : (
-	<a href="http://localhost:8888/login">
-	<button id='login-btn'>Login With Spotify</button>
-	</a>
-	);
-	return (
-	  <div className="App">
-		{connectSpotify}
-		<div>
-		  Now Playing: { this.state.nowPlaying.name }
-		</div>
-		<div>
-		  <img src={ this.state.nowPlaying.albumArt } style={{ width: 100}}/>
-		</div>
-		<button onClick={() => { this.getNowPlaying(); }}>
-		  Check Now Playing
-		</button>
-		<button onClick={() => { this.playPrevSong(); }}>
-		  Prev Song
-		</button>
-		<button onClick={() => { this.playNextSong(); }}>
-		  Next Song
-		</button>
-	  </div>
-	);
+    const { uname, isUserAuthorized } = this.state;
+    return (
+      <div className="App">
+        <Login auth={isUserAuthorized} userLogin={this.userLogin} />
+        <Player />
+        <Search />
+      </div>
+    );
   }
 }
 
