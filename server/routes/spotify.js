@@ -1,19 +1,21 @@
-var SpotifyWebApi = require('spotify-web-api-node');
+const SpotifyWebApi = require('spotify-web-api-node');
 const db = require('../conn');
+const Axios = require('axios');
 require('dotenv').config();
 
-var spotifyApi = new SpotifyWebApi();
+const spotifyApi = new SpotifyWebApi();
 
-
+let token;
 let exp = {};
 
 
 exp.setTokens = () => {
 	db.User.findOne(
-		{ username: 'abhishek' },
+		{ username: 'arav' },
 		(err, resp) => {
-		  spotifyApi.setAccessToken(resp.spotifyAccessToken);
-		  spotifyApi.setRefreshToken(resp.spotifyRefreshToken);
+			token = resp.spotifyAccessToken;
+			spotifyApi.setAccessToken(resp.spotifyAccessToken);
+			spotifyApi.setRefreshToken(resp.spotifyRefreshToken);
 		}
 	);
 }
@@ -86,13 +88,24 @@ exp.addToQueue = async(req, res) => {
 		if(present === undefined) {
 			Q.unshift(respSpotify.uri);
 		}
-		resp = await spotifyApi.play(
-			{
-				uris: Q,
-				offset: {'uri': respSpotify.uri},
-				position_ms: respSpotify.progress
-			}
-		);
+		// resp = await spotifyApi.play(
+			// {
+			// 	uris: Q,
+			// 	offset: {'uri': respSpotify.uri},
+			// 	position_ms: respSpotify.progress
+			// }
+		// );
+		let postData = {
+			uris: Q,
+			offset: {'uri': respSpotify.uri},
+			position_ms: respSpotify.progress
+		};
+		resp = await Axios.post('https://api.spotify.com/v1/me/player/play', postData, {
+			headers: {
+				Authorization: 'Bearer ' + token
+			},
+
+		});
 	} catch(e) {
 		return res.send(e);
 	}
