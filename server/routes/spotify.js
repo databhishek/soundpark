@@ -110,7 +110,7 @@ exp.addToQueue = async(req, res) => {
 		// console.log(t2)
 		let postData = {
 			uris: Q,
-			offset: {postion: 0},
+			offset: {position: 0},
 			position_ms: respSpotify.progress
 		}
 		resp = await axios.put('/me/player/play', postData)
