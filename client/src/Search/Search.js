@@ -20,10 +20,10 @@ export class Search extends Component {
     searchSong = async() => {
         const url = 'http://localhost:8888/searchTrack';
         const searchValue = this.state.searchValue;
-
+        console.log(searchValue)
         let resp = await Axios.get(url, { params: { searchValue: searchValue } });
         console.log(resp);
-        resp = resp.data.body;  
+        resp = resp.data;  
 
         this.setState({
             searchResult: {

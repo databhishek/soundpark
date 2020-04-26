@@ -1,7 +1,7 @@
 require('dotenv').config();
 const request = require('request');
 const db = require('../conn');
-const querystring = require('querystring');
+const querystring = require('query-string');
 const spotify = require('./spotify');
 
 var stateKey = 'spotify_auth_state';
