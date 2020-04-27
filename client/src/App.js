@@ -1,9 +1,11 @@
 import React, { Component } from "react";
+import { Switch, Route, BrowserRouter as Router} from 'react-router-dom';
 import Axios from "axios";
-import "./App.css";
-import Login from "./Login/Login";
+import "./App.scss";
+import Header from './Header';
+import Footer from './Footer';
+import Home from "./Home/Home";
 import Player from "./Player/Player";
-import Search from "./Search/Search";
 
 class App extends Component {
   constructor(props) {
@@ -21,28 +23,36 @@ class App extends Component {
     this.setState({ isUserAuthorized: sessionStorage.getItem('isLoggedIn')});
   }
 
-  userLogin = (username) => {
-    const url = "http://localhost:8888/login";
-    this.setState({ uname: username }, () => {
-    	Axios.post(url, username)
-        .then((res) => {
-          console.log(res);
-        })
-        .catch((e) => {
-          console.log(e);
-		});
-		sessionStorage.setItem('isLoggedIn', true);
-    });
+  userLogin = () => {
+    // const url = "http://localhost:8888/login";
+    // this.setState({ uname: username }, () => {
+    // 	Axios.post(url, username)
+    //     .then((res) => {
+    //       console.log(res);
+    //     })
+    //     .catch((e) => {
+    //       console.log(e);
+		// });
+		// sessionStorage.setItem('isLoggedIn', true);
+    // });
     window.location.assign("http://localhost:8888/spotify/login");
   };
 
   render() {
-    const { uname, isUserAuthorized } = this.state;
+    const { isUserAuthorized } = this.state;
     return (
-      <div className="App">
-        <Login auth={isUserAuthorized} userLogin={this.userLogin} />
-        <Player />
-        <Search />
+      <div>
+        <Header />
+        <Router>
+        <div className="App">
+            <Switch>
+              <Route exact path='/' component={Home}/>
+              {/* <Route path='/login' render={(props) => <Login auth={isUserAuthorized} userLogin={this.userLogin}/>}  /> */}
+              <Route path='/player' component={Player} />
+            </Switch>
+        </div>
+        </Router>
+        <Footer />
       </div>
     );
   }

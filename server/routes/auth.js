@@ -2,6 +2,7 @@ require('dotenv').config();
 const request = require('request');
 const db = require('../conn');
 const querystring = require('query-string');
+const axios = require('axios');
 const spotify = require('./spotify');
 
 var stateKey = 'spotify_auth_state';
@@ -39,7 +40,6 @@ exp.callback = (req, res) => {
 	
 	var code = req.query.code || null;
 	var state = req.query.state || null;
-	var username = req.query.username || null;
 	var storedState = req.cookies ? req.cookies[stateKey] : null;
 
 	if (state === null || state !== storedState) {
@@ -64,39 +64,32 @@ exp.callback = (req, res) => {
 	
 		request.post(authOptions, (error, response, body) => {
 			if (!error && response.statusCode === 200) {
+
 				var access_token = body.access_token;
 				var refresh_token = body.refresh_token;
 
-
-				db.User.findOneAndUpdate(
-					{ username: 'arav' },
-					{ $set: 
-						{ spotifyAccessToken: access_token, spotifyRefreshToken: refresh_token }
-					},
-					{
-						upsert: true
+				// Create User
+				axios.get('https://api.spotify.com/v1/me', {
+					headers: {
+						'Authorization': 'Bearer ' + access_token
 					}
-				)
+				})
 				.then((resp) => {
 					console.log(resp);
-				});
+					let userDbEntry = new db.User({
+						spotifyID: resp.data.id,
+						spotifyAccessToken: access_token,
+						spotifyRefreshToken: refresh_token
+					});
+					userDbEntry.save((err) => {
+						console.log('Duplicate user error in MONGO.');
+					});
+					spotify.setTokens(access_token);
+				})
+				.catch(err => console.log(err));
 
-				spotify.setTokens();
-
-				var options = {
-					url: 'https://api.spotify.com/v1/me',
-					headers: { 'Authorization': 'Bearer ' + access_token },
-					json: true
-				};
-				
-
-				// use the access token to access the Spotify Web API
-				request.get(options, function(error, response, body) {
-				console.log(body);
-				});
-				
 				// we can also pass the token to the browser to make requests from there
-				res.redirect('http://localhost:3000/?' +
+				res.redirect('http://localhost:3000/player?' +
 				querystring.stringify({
 					authorized: true
 				}));
@@ -134,23 +127,25 @@ exp.refresh_token = (req, res) => {
 	});
 };
 
-exp.uLogin = async(req, res) => {
-	try {
-		const userDbEntry = {};
-		userDbEntry.username = req.body.username;
+// exp.uLogin = async(req, res) => {
+// 	try {
+// 		let resp = await db.User.findOne(
+// 			{ username: req.body.username }
+// 		);
 
-		await db.User.create(userDbEntry, (err, createdUser) => {
-			console.log(createdUser);
-			res.json({
-				status: 200,
-				data: 'Username set!'
-			});
-		});
-
-	}
-	catch(err) {
-		console.log(err);
-	}
-};
+// 		if(resp === null) {
+// 			let userDbEntry = new db.User({
+// 				username: req.body.username
+// 			});
+// 			await userDbEntry.save();
+// 			return res.send('User created!').status(200);
+// 		} else {
+// 			return res.send('User with that name already exists!').status(200);
+// 		}
+// 	}
+// 	catch(err) {
+// 		console.log(err);
+// 	}
+// };
 
 module.exports = exp;

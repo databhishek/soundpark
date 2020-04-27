@@ -19,8 +19,7 @@ mongoose.connection.on('disconnected', () => {
 let exp = {}
 
 const UserSchema = new mongoose.Schema({
-  username: { type: String, unique: true },
-  spotifyID: String,
+  spotifyID: { type: String, unique: true },
   spotifyAccessToken: String,
   spotifyRefreshToken: String
 })
@@ -29,7 +28,8 @@ const QueueSchema = new mongoose.Schema({
   trackName: String,
   artist: String,
   albumArt: String,
-  uri: String
+  uri: String,
+  duration: Number
 })
 
 exp.User = mongoose.model('User', UserSchema)

@@ -1,30 +1,56 @@
-const SpotifyWebApi = require('spotify-web-api-node')
-const db = require('../conn')
-const axios = require('axios')
-const querystring = require('query-string');
+const db = require('../conn');
+const axios = require('axios');
 require('dotenv').config()
 
-const spotifyApi = new SpotifyWebApi()
 axios.defaults.baseURL = 'https://api.spotify.com/v1'
 
 let exp = {}
 
-
-exp.setTokens = () => {
-	db.User.findOne(
-		{ username: 'arav' },
-		(err, resp) => {
-			axios.defaults.headers.common['Authorization'] = 'Bearer ' + resp.spotifyAccessToken
-			// spotifyApi.setAccessToken(resp.spotifyAccessToken)
-			// spotifyApi.setRefreshToken(resp.spotifyRefreshToken)
-		}
-	)
+exp.setTokens = (token) => {
+	axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
 }
-exp.setTokens()
+
+
+// getTrackDuration = (trackID) => {
+// 	let resp;
+// 	try {
+// 		resp = await axios.get('/tracks/' + trackID);
+// 		console.log(resp.data.duration_ms);
+// 	} catch(e) {
+// 		console.log(e);
+// 		return res.send(e);
+// 	}
+// 	return resp.data.duration_ms;
+// }
+
+
+exp.timeoutValue = async(progress) => {
+	let resp, playingURI, Q = {}, sumDurations = 0, tValue;
+	 try {
+		resp = await axios.get('/me/player/currently-playing');
+		playingURI = resp.data.item.uri;
+
+		resp = await db.Queue.find(null, 'uri duration');
+		Q.uris = resp.map(ele => ele.uri); 
+		Q.durations = resp.map(ele => ele.duration);
+		console.log(Q.uris);
+		console.log(Q.durations);
+		let index = (Q.uris).findIndex((uri) => {
+			return uri === playingURI;
+		});
+		console.log('Song found at: ' + index);
+		for(let i = index; i < (Q.durations).length; i++) {
+			sumDurations += (Q.durations)[i];
+		}
+		tValue = (sumDurations)-progress;
+	 } catch(e) {
+		 console.log(e);
+	 }
+	 return tValue;
+}
 
 exp.playNextSong = async(req, res) => {
 	try {
-		// await spotifyApi.skipToNext()
 		await axios.post('/me/player/next')
 	} catch(e) {
 		console.log(e)
@@ -35,7 +61,6 @@ exp.playNextSong = async(req, res) => {
 
 exp.playPrevSong = async(req, res) => {
 	try {
-		// await spotifyApi.skipToPrevious()
 		await axios.post('/me/player/previous')
 	} catch(e) {
 		console.log(e)
@@ -45,24 +70,19 @@ exp.playPrevSong = async(req, res) => {
 }
 
 exp.getCurrentlyPlaying = async(req, res) => {
-	let resp
+	let resp;
 	try {
-		// resp = await spotifyApi.getMyCurrentPlaybackState()
-		// console.log(resp.body)
 		resp = await axios.get('/me/player/currently-playing')
 	} catch(e) {
 		console.log(e)
 		return res.send(e)
 	}
-	console.log(resp)
     return res.send(resp.data).status(200)
 }
 
 exp.searchTrack = async(req, res) => {
 	let resp
 	try {
-		// resp = await spotifyApi.searchTracks(req.query.searchValue)
-		// console.log(resp)
 		resp = await axios.get('/search', { 
 			params: {
 				q: req.query.searchValue,
@@ -77,48 +97,76 @@ exp.searchTrack = async(req, res) => {
 }
 
 exp.addToQueue = async(req, res) => {
-	let respSpotify, Q, present, t1
-	let songToAdd = req.body.track
-	try {	
-		// t1 = (new Date).getTime()
-		// console.log(t1)
-		// respSpotify = await spotifyApi.getMyCurrentPlaybackState()
-		respSpotify = await axios.get('/me/player/currently-playing')
-		respSpotify = { 
-			uri: respSpotify.data.item.uri, 
-			progress: respSpotify.data.progress_ms 
+	let respSpotify, Q, trackData, resp;
+	let songToAdd = req.body.track;
+	console.log(songToAdd);
+	let tValue;
+	try {
+		respSpotify = await axios.get('/me/player/currently-playing');
+		if(respSpotify) {
+			respSpotify = { 
+				uri: respSpotify.data.item.uri, 
+				progress: respSpotify.data.progress_ms 
+			}
 		}
-		console.log(respSpotify)
-		console.log(respSpotify.progress)
+		trackData = await axios.get('/tracks/' + songToAdd.id);
+		console.log('Track Data: ' + trackData.data);
 		songToAdd = new db.Queue({
 			trackName: songToAdd.name,
 			artist: songToAdd.artist,
 			albumArt: songToAdd.album,
-			uri: songToAdd.uri
-		})
-		await songToAdd.save()
-		Q = await db.Queue.find(null, 'uri')
-		Q = Q.map(song => song.uri)
-		console.log(Q)
-		present = Q.find((uri) => {
-			return uri === respSpotify.uri
-		})
-		if(present === undefined) {
-			Q.unshift(respSpotify.uri)
+			uri: songToAdd.uri,
+			duration: trackData.data.duration_ms
+		});
+		await songToAdd.save();
+		Q = await db.Queue.find(null, 'uri');
+		Q = Q.map(song => song.uri);
+		// console.log(Q)
+		// present = Q.find((uri) => {
+		// 	return uri === respSpotify.uri
+		// })
+		// if(present === undefined) {
+		// 	Q.unshift(respSpotify.uri)
+		// }
+		let postData;
+		if(Q.length === 1) {
+			postData = {
+				uris: Q,
+				offset: {position: 0}
+			}
+		} else {
+			postData = {
+				uris: Q,
+				offset: {'uri': respSpotify.uri},
+				position_ms: respSpotify.progress
+			}
 		}
-		// let t2 = (new Date).getTime()
-		// console.log(t2)
-		let postData = {
-			uris: Q,
-			offset: {position: 0},
-			position_ms: respSpotify.progress
-		}
-		resp = await axios.put('/me/player/play', postData)
-		console(resp)
+		await axios.put('/me/player/play', postData);
 	} catch(e) {
 		return res.send(e)
 	}
-	return res.send('Successfully added song to queue.').status(200)
+	if(Q.length === 1) {
+		tValue = await exp.timeoutValue(0);
+	} else {
+		tValue = await exp.timeoutValue(respSpotify.progress);
+	}
+	console.log('Timeout should be: ' + tValue);
+	return res.send({ timeoutValue: tValue }).status(200);
+}
+
+exp.playPause = async(req, res) => {
+	try {
+		let resp = await axios.get('/me/player/currently-playing');
+		console.log(resp.data.is_playing);
+		if(resp.data.is_playing) {
+			await axios.put('/me/player/pause');
+		} else {
+			await axios.put('/me/player/play');
+		}
+	} catch(e) {
+		return res.send(e);
+	}
+	return res.send('Play or Paused. Whatever it was.').status(200);
 }
 
 module.exports = exp
