@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import cover from '../assets/cover.png';
 import Axios from 'axios';
-
+import './Player.scss';
 const baseURL = 'http://localhost:8888';
 var globalTimer;
 
@@ -28,12 +28,13 @@ export class Player extends Component {
 	}
 	
 	componentDidMount() {
+		this.getNowPlaying();
 	}
 
 
 	getNowPlaying = async() => {
 		console.log('Called now playing!');
-		const url = 'http://localhost:8888/currentlyPlaying';
+		const url = baseURL + '/currentlyPlaying';
 		try {
 			let resp = await Axios.get(url);
 			// console.log(resp);
@@ -61,9 +62,9 @@ export class Player extends Component {
 	}
 	
 	playNextSong = async() => {
-		const url = 'http://localhost:8888/playNext';
+		const url = baseURL + '/playNext';
 		try {
-			await Axios.get(url);
+			let resp = await Axios.get(url);
 			this.getNowPlaying();
 		} catch(e) {
 			console.log(e);
@@ -71,9 +72,9 @@ export class Player extends Component {
 	}
 	
 	playPrevSong = async() => {
-		const url = 'http://localhost:8888/playPrev';
+		const url = baseURL + '/playPrev';
 		try {
-			await Axios.get(url);
+			let resp = await Axios.get(url);
 			this.getNowPlaying();
 		} catch(e) {
 			console.log(e);
@@ -81,27 +82,30 @@ export class Player extends Component {
 	}
 
 	searchSong = async() => {
-        const url = 'http://localhost:8888/searchTrack';
-        const searchValue = this.state.searchValue;
-        console.log(searchValue)
-        let resp = await Axios.get(url, { params: { searchValue: searchValue } });
-        resp = resp.data;  
-		console.log(resp);
-        this.setState({
-            searchResult: {
-				searchedYet: true,
-				id: resp.tracks.items[0].id,
-                name: resp.tracks.items[0].name,
-                album: resp.tracks.items[0].album.name,
-                artist: resp.tracks.items[0].artists[0].name,
-				uri: resp.tracks.items[0].uri
-            }
-		});
-		
+		try {
+			const url = baseURL + '/searchTrack';
+			const searchValue = this.state.searchValue;
+			console.log(searchValue)
+			let resp = await Axios.get(url, { params: { searchValue: searchValue } });
+			resp = resp.data;  
+			console.log(resp);
+			this.setState({
+				searchResult: {
+					searchedYet: true,
+					id: resp.tracks.items[0].id,
+					name: resp.tracks.items[0].name,
+					album: resp.tracks.items[0].album.name,
+					artist: resp.tracks.items[0].artists[0].name,
+					uri: resp.tracks.items[0].uri
+				}
+			});
+		} catch(e) {
+			console.log(e);
+		}
     }
 
     addToQueue = async() => {
-        const url = 'http://localhost:8888/addToQueue';
+        const url = baseURL + '/addToQueue';
 		const searchResult = this.state.searchResult;
 		let resp;
         let track = {
@@ -118,13 +122,14 @@ export class Player extends Component {
             console.log(e);
 		}
 		console.log(resp.data.timeoutValue);
+		this.getNowPlaying();
 		globalTimer = setTimeout(() => {
 			this.getNowPlaying();
 		}, resp.data.timeoutValue);
 	}
 
 	playPause = async() => {
-		const url = 'http://localhost:8888/playPause';
+		const url = baseURL + '/playPause';
 		try {
 			let resp = await Axios.post(url);
 			this.getNowPlaying();
@@ -145,39 +150,41 @@ export class Player extends Component {
 		const { nowPlaying } = this.state;
         if(searchedYet) {
             result = (
-                <div>
-                    <p>Name: {name}</p>
+                <div className='search-res'>
+                    <p>Song: {name}</p>
                     <p>Artist: {artist}</p>
                     <p>Album: {album}</p>
                     <button onClick={ this.addToQueue }>
-                        Add to Queue
+                        Add
                     </button>
                 </div>
             );
         }
 
 		return (
-			<div>
-				<h3>Now Playing</h3> <h4>{ nowPlaying.name }</h4>
-				<img src={ nowPlaying.albumArt } alt='albumArt' style={{ width: 200, display: 'block', marginLeft: 'auto', marginRight: 'auto', paddingBottom: '5px'}}/>
-				<button onClick={ this.playPrevSong }>
-					Prev
-				</button>
-				<button onClick={ this.playPause }>
-					Play/Pause
-				</button>
-				<button onClick={ this.playNextSong }>
-					Next
-				</button>
-				<form onSubmit={ this.handleSearch }>
-                    <input type='text' placeholder='Search for a song...' name='searchValue'></input>
-                    <button type='submit'>
-                        Search
-                    </button>
-			    </form>
-                {result}			
-			</div>
-		)
+      <div className="player-container">
+        <h3>Now Playing</h3> <h3>{nowPlaying.name}</h3>
+        <img className="album-art" src={nowPlaying.albumArt} alt="albumArt" />
+        <button className="control-btns" onClick={this.playPrevSong}>
+          Prev
+        </button>
+        <button className="control-btns" onClick={this.playPause}>
+          Play/Pause
+        </button>
+        <button className="control-btns" onClick={this.playNextSong}>
+          Next
+        </button>
+        <form onSubmit={this.handleSearch}>
+          <input
+            type="text"
+            placeholder="Search for a song..."
+            name="searchValue"
+          ></input>
+          <button className='search-btn' type="submit">&rarr;</button>
+        </form>
+        {result}
+      </div>
+    );
 	}
 }
 

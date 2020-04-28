@@ -88,6 +88,8 @@ exp.callback = (req, res) => {
 				})
 				.catch(err => console.log(err));
 
+				db.Queue.remove({});
+
 				// we can also pass the token to the browser to make requests from there
 				res.redirect('http://localhost:3000/player?' +
 				querystring.stringify({
@@ -127,25 +129,5 @@ exp.refresh_token = (req, res) => {
 	});
 };
 
-// exp.uLogin = async(req, res) => {
-// 	try {
-// 		let resp = await db.User.findOne(
-// 			{ username: req.body.username }
-// 		);
-
-// 		if(resp === null) {
-// 			let userDbEntry = new db.User({
-// 				username: req.body.username
-// 			});
-// 			await userDbEntry.save();
-// 			return res.send('User created!').status(200);
-// 		} else {
-// 			return res.send('User with that name already exists!').status(200);
-// 		}
-// 	}
-// 	catch(err) {
-// 		console.log(err);
-// 	}
-// };
 
 module.exports = exp;

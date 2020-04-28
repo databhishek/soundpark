@@ -1,38 +1,88 @@
-.Home {
-  img {
-      max-width: 100%;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
-      margin-top: 10em;
-      margin-bottom: 1em;
-      height: auto;
-  }
+@import url('https://fonts.googleapis.com/css2?family=Muli:wght@500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Abel&display=swap');
 
-  .btn {
+
+$green : #1DB954;
+
+.banner {
+    max-width: 40vw;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 15em;
+    margin-bottom: 0;
+    height: auto;
+}
+
+
+
+@mixin buttonBG($bg) {
+  border: 2px solid $bg;
+  color: $bg;
+  &:hover {
+    background-color: $bg;
+    transition: all 0.3s ease-in-out;
+  }
+}
+
+.home-container {
+  display: block;
+  justify-content: space-evenly;
+  align-items: center;
+  font-family: "Muli",sans-serif;
+  height: 97vh;
+  .skewBtn{
+    width: 120px;
+    height: 40px;
+    outline: none;
+    cursor: pointer;
+    background: none;
+    transition: .5s;
+    font-size: 22px;
     border-radius: 5px;
-    padding: 5px 25px;
-    font-size: 1.3em;
+    &:hover{
+      border: none;
+      color: white;
+      
+    }
+  }
+  .inp {
+    width: 36vw;
+    height: 4vh;
+    font-weight: bold;
+    margin-bottom: 10px;
+    padding-right: 10px;
+    &:focus {
+      border: 3px solid lightblue;
+      border-radius: 5px;
+      padding: 0 10px;
+    }
+  }
+  .submit-btn {
+    text-align: center;
     text-decoration: none;
-    margin: 10px;
-    color: #fff;
-    position: relative;
-    display: inline-block;
+    font-size: 18px;
+    border: none;
+    border-radius: 5px;
+    background-color: white;
+    margin-left: -35px;
+    &:hover {
+      transform:scale(1.2);
+    }
   }
 
-  .btn:active {
-      transform: translate(0px, 5px);
-      -webkit-transform: translate(0px, 5px);
-      box-shadow: 0px 1px 0px 0px;
-  }
 
-  .green {
-    background-color: #1DB954;
-    box-shadow: 0px 5px 0px 0px #15B358;
+  @media only screen and (max-width: 768px) {
+    img {
+      max-width: 70vw;
+    }
+    .inp {
+      width: 65vw;
+    }
   }
-  
-  .green:hover {
-    background-color: #48E68B;
-  }
-  
+}
+
+
+.green{
+  @include buttonBG($green);
 }

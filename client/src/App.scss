@@ -1,4 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Abel&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Muli:wght@500&display=swap');
+
+
 .App {
+  font-family: 'Muli', sans-serif;
   text-align: center;
 }
 
@@ -27,9 +32,24 @@
   to { transform: rotate(360deg); }
 }
 
-div, button {
+div {
+  font-family: 'Muli', sans-serif;
   margin: 10px;
 }
+
+button {
+  font-family: 'Helvetica', sans-serif;
+  margin: 10px;
+  border: 1px solid darkgray;
+  border-radius: 3px;
+  text-align: center;
+  padding: 5px;
+  background: white;
+  font-size: 20px;
+  &:hover {
+    transform: scale(1.1);
+  }
+} 
 
 footer {
   position: fixed;
