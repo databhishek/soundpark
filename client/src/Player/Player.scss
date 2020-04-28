@@ -8,6 +8,7 @@ $green : #1DB954;
     border: 3px solid white;
     border-radius: 5px;
     box-shadow: 5px 5px 10px 1px darkgrey;
+    
     .album-art {
         display: block;
         width: 300px;
@@ -17,6 +18,7 @@ $green : #1DB954;
         margin: 10px auto;
         border-radius: 5px;
     }
+
     .control-btns {
         border: none;
         font-family: 'Helvetica', sans-serif;
@@ -28,6 +30,7 @@ $green : #1DB954;
             border: 1px solid darkgrey;
         }
     }
+
     .search-btn {
         border: none;
         background: white;
@@ -37,6 +40,7 @@ $green : #1DB954;
             transform: scale(1.1);
         }
     }
+    
     .search-res {
         font-size: 18px;
         font-family: 'Helvetica', sans-serif;

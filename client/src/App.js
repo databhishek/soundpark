@@ -24,17 +24,6 @@ class App extends Component {
   }
 
   userLogin = () => {
-    // const url = "http://localhost:8888/login";
-    // this.setState({ uname: username }, () => {
-    // 	Axios.post(url, username)
-    //     .then((res) => {
-    //       console.log(res);
-    //     })
-    //     .catch((e) => {
-    //       console.log(e);
-		// });
-		// sessionStorage.setItem('isLoggedIn', true);
-    // });
     window.location.assign("http://localhost:8888/spotify/login");
   };
 
@@ -52,6 +41,7 @@ class App extends Component {
             </Switch>
         </div>
         </Router>
+        <Footer /> 
       </div>
     );
   }

@@ -25,4 +25,4 @@ router.get('/next', queue.showNext);
 router.get('/all', queue.showAll);
 router.get('/remove', queue.removeTrack);
 
-module.exports = router
+module.exports = router;
