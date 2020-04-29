@@ -133,17 +133,15 @@ exp.addToQueue = async (req, res) => {
 		let postData;
 		if (Q.length === 1) {
 			postData = {
-				uris: Q,
-				offset: { position: 0 },
+				uris: Q
 			};
+			await axios.put('/me/player/play', postData);
 		} else {
-			postData = {
-				uris: Q,
-				offset: { uri: respSpotify.uri },
-				position_ms: respSpotify.progress,
-			};
+			await axios.post('/me/player/queue', null, { params: {
+				uri: Q[Q.length-1]
+			}});
+			
 		}
-		await axios.put('/me/player/play', postData);
 	} catch (e) {
 		return res.send(e);
 	}
