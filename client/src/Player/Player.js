@@ -169,9 +169,9 @@ export class Player extends Component {
 					src={nowPlaying.albumArt}
 					alt='albumArt'
 				/>
-				<button className='control-btns' onClick={this.playPrevSong}>
+				{/* <button className='control-btns' onClick={this.playPrevSong}>
 					Prev
-				</button>
+				</button> */}
 				<button className='control-btns' onClick={this.playPause}>
 					Play/Pause
 				</button>
