@@ -16,8 +16,8 @@ module.exports = io => {
     router.get('/currentlyPlaying', spotify.getCurrentlyPlaying);
     router.get('/searchTrack', spotify.searchTrack);
     router.post('/addToQueue', spotify.addToQueue);
-    router.post('/play', spotify.play);
-    router.post('/pause', spotify.pause);
+    router.get('/play', spotify.play);
+    router.get('/pause', spotify.pause);
 
     // Auth Routes
     router.get('/spotify/login', auth.login);
