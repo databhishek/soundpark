@@ -11,6 +11,7 @@ module.exports = io => {
     router.post('/createRoom', room.createRoom);
     router.get('/joinRoom', room.joinRoom);
     router.get('/leaveRoom', room.joinRoom);
+    router.get('/rooms', room.getRooms);
 
     // Spotify Routes
     router.get('/currentlyPlaying', spotify.getCurrentlyPlaying);
