@@ -102,7 +102,6 @@ module.exports = () => {
 						})
 						.catch((err) => console.log(err));
 
-					db.Queue.deleteMany({}, (resp) => console.log('Queues emptied? ' + resp));
 
 					// we can also pass the token to the browser to make requests from there
 					res.redirect(

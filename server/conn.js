@@ -30,6 +30,7 @@ const UserSchema = new mongoose.Schema({
 const QueueSchema = new mongoose.Schema({
 	trackName: String,
 	artist: String,
+	album: String,
 	albumArt: String,
 	uri: String,
 	duration: Number
@@ -37,6 +38,7 @@ const QueueSchema = new mongoose.Schema({
 
 const RoomSchema = new mongoose.Schema({
 	roomName: String,
+	roomCode: String,
 	queue: [QueueSchema],
 	changedat: Number
 	// curr: {
@@ -47,5 +49,6 @@ const RoomSchema = new mongoose.Schema({
 
 exp.User = mongoose.model('User', UserSchema);
 exp.Room = mongoose.model('Room', RoomSchema);
+exp.Queue = mongoose.model('Queue', QueueSchema);
 
 module.exports = exp;

@@ -4,7 +4,9 @@ require('dotenv').config();
 
 axios.defaults.baseURL = 'https://api.spotify.com/v1';
 
-module.exports = () => {
+module.exports = (io) => {
+	const timer = require('../timer')(io);
+
 	let exp = {};
 
 	exp.setTokens = (token) => {
@@ -89,8 +91,8 @@ module.exports = () => {
 			resp = await axios.get('/search', {
 				params: {
 					q: req.query.searchValue,
-					type: 'track',
-				},
+					type: 'track'
+				}
 			});
 		} catch (e) {
 			console.log(e);
@@ -99,92 +101,64 @@ module.exports = () => {
 		return res.send(resp.data).status(200);
 	};
 
-	// exp.addToQueue = async (req, res) => {
-	// 	let respSpotify, Q, trackData, resp;
-	// 	let songToAdd = req.body.track;
-	// 	console.log(songToAdd);
-	// 	let tValue;
-	// 	try {
-	// 		respSpotify = await axios.get('/me/player/currently-playing');
-	// 		if (respSpotify) {
-	// 			respSpotify = {
-	// 				uri: respSpotify.data.item.uri,
-	// 				progress: respSpotify.data.progress_ms,
-	// 			};
-	// 		}
-	// 		trackData = await axios.get('/tracks/' + songToAdd.id);
-	// 		console.log('Track Data: ' + trackData.data);
-	// 		songToAdd = new db.Queue({
-	// 			trackName: songToAdd.name,
-	// 			artist: songToAdd.artist,
-	// 			albumArt: songToAdd.album,
-	// 			uri: songToAdd.uri,
-	// 			duration: trackData.data.duration_ms,
-	// 		});
-	// 		await songToAdd.save();
-	// 		Q = await db.Queue.find(null, 'uri');
-	// 		Q = Q.map((song) => song.uri);
-	// 		// console.log(Q)
-	// 		// present = Q.find((uri) => {
-	// 		// 	return uri === respSpotify.uri
-	// 		// })
-	// 		// if(present === undefined) {
-	// 		// 	Q.unshift(respSpotify.uri)
-	// 		// }
-	// 		let postData;
-	// 		if (Q.length === 1) {
-	// 			postData = {
-	// 				uris: Q
-	// 			};
-	// 			await axios.put('/me/player/play', postData);
-	// 		} else {
-	// 			await axios.post('/me/player/queue', null, { params: {
-	// 				uri: Q[Q.length-1]
-	// 			}});
-				
-	// 		}
-	// 	} catch (e) {
-	// 		return res.send(e);
-	// 	}
-	// 	if (Q.length === 1) {
-	// 		tValue = await exp.timeoutValue(0);
-	// 	} else {
-	// 		tValue = await exp.timeoutValue(respSpotify.progress);
-	// 	}
-	// 	console.log('Timeout should be: ' + tValue);
-	// 	return res.send({ timeoutValue: tValue }).status(200);
-	// };
-
 	exp.addToQueue = async (req, res) => {
-		let respSpotify, Q, trackData;
+		let Q, trackData;
 		let songToAdd = req.body.track;
 		console.log(songToAdd);
-		let tValue;
 		try {
 			trackData = await axios.get('/tracks/' + songToAdd.id);
+			let currSong = await axios.get('/me/player/currently-playing');
 			console.log('Track Data: ' + trackData.data);
-
-			await db.Room.update(
-				{roomId: req.body.roomId}, 
-				{$push: 
-					{queue: {	
-						trackName: songToAdd.name,
-						artist: songToAdd.artist,
-						albumArt: songToAdd.album,
-						uri: songToAdd.uri,
-						duration: trackData.data.duration_ms
-						}
-					}
+			console.log(currSong.data);
+			console.log(req.body.roomCode);
+			let song = new db.Queue({
+				trackName: songToAdd.name,
+				artist: songToAdd.artist,
+				album: songToAdd.album,
+				albumArt: songToAdd.albumArt.url,
+				uri: songToAdd.uri,
+				duration: trackData.data.duration_ms
+			});
+			await db.Room.findOneAndUpdate(
+				{ roomCode: req.body.roomCode },
+				{
+					$push: { queue: song }
 				}
 			);
-			Q = await db.Room.find({_id: req.body.roomId}, 'queue');
-			await axios.post('/me/player/queue', null, { params: {
-				uri: Q[Q.length-1]
-			}});
+			// await db.Room.update(
+			// 	{roomId: req.body.roomId},
+			// 	{$push:
+			// 		{queue: {
+			// 			trackName: songToAdd.name,
+			// 			artist: songToAdd.artist,
+			// 			album: songToAdd.album,
+			// 			albumArt: songToAdd.images[0].url,
+			// 			uri: songToAdd.uri,
+			// 			duration: trackData.data.duration_ms
+			// 			}
+			// 		}
+			// 	}
+			// );
+			Q = await db.Room.find({ roomCode: req.body.roomCode }, 'queue');
+			Q = Q[0].queue;
+			Q = Q.map((song) => song.uri);
+			console.log(Q);
+			if (Q.length === 1) {
+				postData = {
+					uris: Q
+				};
+				await axios.put('/me/player/play', postData);
+				timer.setTimer(req.body.roomCode, 0);
+			} else {
+				await axios.post('/me/player/queue', null, { params: {
+					uri: Q[Q.length-1]
+				}});
+				timer.setTimer(req.body.roomCode, currSong.data.progress_ms);	
+			}
 		} catch (e) {
 			return res.send(e);
 		}
-		return res.send("Added to queue").status(200);
+		return res.send('Added to queue').status(200);
 	};
 
 	// exp.playPause = async (req, res) => {
@@ -203,23 +177,25 @@ module.exports = () => {
 	// };
 
 	exp.play = async (req, res) => {
-		try{
-			let room = await db.Room.find({_id: req.body.roomId});
+		try {
+			let room = await db.Room.find({ _id: req.body.roomId });
 			let d = new Date();
-			await axios.put('/me/player/play', {uris: room.queue, position_ms: d.getTime() - room.changedat});
-		} catch(err) {
+			await axios.put('/me/player/play', {
+				uris: room.queue,
+				position_ms: d.getTime() - room.changedat
+			});
+		} catch (err) {
 			return res.send(err);
 		}
-	}
+	};
 
 	exp.pause = async (req, res) => {
-		try{
+		try {
 			await axios.put('/me/player/pause');
-		} catch(err) {
+		} catch (err) {
 			return res.send(err);
 		}
-	}
+	};
 
 	return exp;
-}
-
+};

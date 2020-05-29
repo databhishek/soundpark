@@ -3,10 +3,9 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const cors = require('cors');
 const express = require('express');
-// const routes = require('./routes');
 
 const app = express();
-const server = require('http').Server(app);
+const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 const routes = require('./routes')(io);
 
@@ -26,8 +25,8 @@ app.use(cors(corsOptions));
 app.use('/', routes);
 
 io.on('connection', socket => {
-    console.log('socket connected');
+    console.log('Socket connected.');
 })
 
 console.log('Listening on 8888.');
-app.listen(8888);
+server.listen(8888);

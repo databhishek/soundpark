@@ -4,7 +4,7 @@ const router = express.Router();
 module.exports = io => {
     const auth = require('./auth')();
     const queue = require('./queue')();
-    const spotify = require('./spotify')();
+    const spotify = require('./spotify')(io);
     const room = require('./room')(io);
 
     //Room Routes

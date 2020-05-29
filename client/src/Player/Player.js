@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import cover from '../assets/cover.png';
 import Axios from 'axios';
+import { Socket } from '../Socket';
 import './Player.scss';
 const baseURL = 'http://localhost:8888';
-var globalTimer;
 
 export class Player extends Component {
 	constructor(props) {
@@ -12,7 +12,7 @@ export class Player extends Component {
 		this.state = {
 			nowPlaying: {
 				name: 'Queue is empty! Add something to get started.',
-				albumArt: cover,
+				albumArt: cover
 			},
 			searchValue: '',
 			searchResult: {
@@ -22,12 +22,24 @@ export class Player extends Component {
 				artist: '',
 				album: '',
 				uri: '',
-			},
+				albumArt: ''
+			}
 		};
 	}
 
 	componentDidMount() {
 		this.getNowPlaying();
+		Socket.on('currently_playing', (data) => {
+			console.log('Grabbed event!');
+			if (data != null) {
+				this.setState({
+					nowPlaying: {
+						name: data.trackName,
+						albumArt: data.albumArt
+					}
+				});
+			}
+		});
 	}
 
 	getNowPlaying = async () => {
@@ -42,15 +54,15 @@ export class Player extends Component {
 				this.setState({
 					nowPlaying: {
 						name: resp.item.name,
-						albumArt: resp.item.album.images[0].url,
-					},
+						albumArt: resp.item.album.images[0].url
+					}
 				});
 			} else {
 				this.setState({
 					nowPlaying: {
 						name: 'Nothing is playing!',
-						albumArt: '',
-					},
+						albumArt: ''
+					}
 				});
 			}
 		} catch (e) {
@@ -68,15 +80,15 @@ export class Player extends Component {
 		}
 	};
 
-	playPrevSong = async () => {
-		const url = baseURL + '/playPrev';
-		try {
-			let resp = await Axios.get(url);
-			this.getNowPlaying();
-		} catch (e) {
-			console.log(e);
-		}
-	};
+	// playPrevSong = async () => {
+	// 	const url = baseURL + '/playPrev';
+	// 	try {
+	// 		let resp = await Axios.get(url);
+	// 		this.getNowPlaying();
+	// 	} catch (e) {
+	// 		console.log(e);
+	// 	}
+	// };
 
 	searchSong = async () => {
 		try {
@@ -84,7 +96,7 @@ export class Player extends Component {
 			const searchValue = this.state.searchValue;
 			console.log(searchValue);
 			let resp = await Axios.get(url, {
-				params: { searchValue: searchValue },
+				params: { searchValue: searchValue }
 			});
 			resp = resp.data;
 			console.log(resp);
@@ -96,7 +108,8 @@ export class Player extends Component {
 					album: resp.tracks.items[0].album.name,
 					artist: resp.tracks.items[0].artists[0].name,
 					uri: resp.tracks.items[0].uri,
-				},
+					albumArt: resp.tracks.items[0].album.images[0]
+				}
 			});
 		} catch (e) {
 			console.log(e);
@@ -106,25 +119,23 @@ export class Player extends Component {
 	addToQueue = async () => {
 		const url = baseURL + '/addToQueue';
 		const searchResult = this.state.searchResult;
-		let resp;
 		let track = {
 			id: searchResult.id,
 			name: searchResult.name,
 			artist: searchResult.artist,
-			album: searchResult.album, //currently just album name
+			album: searchResult.album,
 			uri: searchResult.uri,
+			albumArt: searchResult.albumArt
 		};
 		try {
-			resp = await Axios.post(url, { track });
+			let roomCode = localStorage.getItem('roomCode');
+			console.log(roomCode);
+			await Axios.post(url, { roomCode, track });
 			console.log('Added to queue');
 		} catch (e) {
 			console.log(e);
 		}
-		console.log(resp.data.timeoutValue);
 		this.getNowPlaying();
-		globalTimer = setTimeout(() => {
-			this.getNowPlaying();
-		}, resp.data.timeoutValue);
 	};
 
 	playPause = async () => {

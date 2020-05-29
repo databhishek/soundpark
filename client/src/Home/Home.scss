@@ -2,6 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Abel&display=swap');
 
 $green: #1db954;
+$blue: #3b5998;
 
 .banner {
 	max-width: 40vw;
@@ -82,4 +83,8 @@ $green: #1db954;
 
 .green {
 	@include buttonBG($green);
+}
+
+.blue {
+	@include buttonBG($blue);
 }
