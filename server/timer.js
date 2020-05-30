@@ -18,9 +18,8 @@ module.exports = (io) => {
 				{ roomCode: roomCode },
 				{ $pop: { queue: -1 }, $set: { changedat: d.getTime() } }
 			);
-			// io.to(room.roomCode).emit('currently_playing', room.queue[0]);
-			io.emit('currently_playing', room.queue[1]);
-			console.log('Emitted stuff?');
+			io.to(roomCode).emit('currently_playing', room.queue[1]);
+			console.log("Emitted");
 		}, timerVal);
 	};
 

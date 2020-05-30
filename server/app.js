@@ -25,7 +25,22 @@ app.use(cors(corsOptions));
 app.use('/', routes);
 
 io.on('connection', socket => {
-    console.log('Socket connected.');
+    console.log('Socket connected ' + socket.id);
+
+    socket.on('join_room', roomCode => {
+        socket.join(roomCode, () => {
+            io.to(roomCode).emit('joined_room', 'You have joined ' + roomCode); 
+            });
+    });
+
+    socket.on('leave_room', roomCode => {
+        socket.leave(roomCode);
+        console.log('Left room' + roomCode);
+    });
+
+    socket.on('disconnect', () => {
+        console.log('Socket disconnected');
+    })
 })
 
 console.log('Listening on 8888.');

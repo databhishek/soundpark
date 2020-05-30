@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import cover from '../assets/cover.png';
 import Axios from 'axios';
-import { Socket } from '../Socket';
 import './Player.scss';
+import io from 'socket.io-client';
 const baseURL = 'http://localhost:8888';
 
 export class Player extends Component {
@@ -23,13 +23,19 @@ export class Player extends Component {
 				album: '',
 				uri: '',
 				albumArt: ''
-			}
+			},
+			roomCode: localStorage.getItem('roomCode')
 		};
 	}
 
 	componentDidMount() {
 		this.getNowPlaying();
-		Socket.on('currently_playing', (data) => {
+		const socket = io.connect(baseURL);
+		socket.emit('join_room', this.state.roomCode);
+		socket.on('joined_room', (data) => {
+			console.log(data);
+		})
+		socket.on('currently_playing', (data) => {
 			console.log('Grabbed event!');
 			if (data != null) {
 				this.setState({
@@ -80,16 +86,6 @@ export class Player extends Component {
 		}
 	};
 
-	// playPrevSong = async () => {
-	// 	const url = baseURL + '/playPrev';
-	// 	try {
-	// 		let resp = await Axios.get(url);
-	// 		this.getNowPlaying();
-	// 	} catch (e) {
-	// 		console.log(e);
-	// 	}
-	// };
-
 	searchSong = async () => {
 		try {
 			const url = baseURL + '/searchTrack';
@@ -128,7 +124,7 @@ export class Player extends Component {
 			albumArt: searchResult.albumArt
 		};
 		try {
-			let roomCode = localStorage.getItem('roomCode');
+			let roomCode = this.state.roomCode;
 			console.log(roomCode);
 			await Axios.post(url, { roomCode, track });
 			console.log('Added to queue');
@@ -141,7 +137,8 @@ export class Player extends Component {
 	playPause = async () => {
 		const url = baseURL + '/playPause';
 		try {
-			let resp = await Axios.post(url);
+			let roomCode = localStorage.getItem('roomCode');
+			let resp = await Axios.get(url, { params: {roomCode: roomCode}});
 			this.getNowPlaying();
 			console.log(resp);
 		} catch (e) {

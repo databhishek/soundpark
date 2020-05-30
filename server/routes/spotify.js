@@ -13,67 +13,6 @@ module.exports = (io) => {
 		axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
 	};
 
-	// getTrackDuration = (trackID) => {
-	// 	let resp;
-	// 	try {
-	// 		resp = await axios.get('/tracks/' + trackID);
-	// 		console.log(resp.data.duration_ms);
-	// 	} catch(e) {
-	// 		console.log(e);
-	// 		return res.send(e);
-	// 	}
-	// 	return resp.data.duration_ms;
-	// }
-
-	// exp.timeoutValue = async (progress) => {
-	// 	let resp,
-	// 		playingURI,
-	// 		Q = {},
-	// 		sumDurations = 0,
-	// 		tValue;
-	// 	try {
-	// 		resp = await axios.get('/me/player/currently-playing');
-	// 		playingURI = resp.data.item.uri;
-
-	// 		resp = await db.Queue.find(null, 'uri duration');
-	// 		Q.uris = resp.map((ele) => ele.uri);
-	// 		Q.durations = resp.map((ele) => ele.duration);
-	// 		console.log(Q.uris);
-	// 		console.log(Q.durations);
-	// 		let index = Q.uris.findIndex((uri) => {
-	// 			return uri === playingURI;
-	// 		});
-	// 		console.log('Song found at: ' + index);
-	// 		for (let i = index; i < Q.durations.length; i++) {
-	// 			sumDurations += Q.durations[i];
-	// 		}
-	// 		tValue = sumDurations - progress;
-	// 	} catch (e) {
-	// 		console.log(e);
-	// 	}
-	// 	return tValue;
-	// };
-
-	// exp.playPrevSong = async (req, res) => {
-	// 	try {
-	// 		await axios.post('/me/player/previous');
-	// 	} catch (e) {
-	// 		console.log(e);
-	// 		return res.send(e);
-	// 	}
-	// 	return res.send(null).status(200);
-	// };
-
-	// exp.playNextSong = async (req, res) => {
-	// 	try {
-	// 		await axios.post('/me/player/next');
-	// 	} catch (e) {
-	// 		console.log(e);
-	// 		return res.send(e);
-	// 	}
-	// 	return res.send(null).status(200);
-	// };
-
 	exp.getCurrentlyPlaying = async (req, res) => {
 		let resp;
 		try {
@@ -104,13 +43,9 @@ module.exports = (io) => {
 	exp.addToQueue = async (req, res) => {
 		let Q, trackData;
 		let songToAdd = req.body.track;
-		console.log(songToAdd);
 		try {
 			trackData = await axios.get('/tracks/' + songToAdd.id);
 			let currSong = await axios.get('/me/player/currently-playing');
-			console.log('Track Data: ' + trackData.data);
-			console.log(currSong.data);
-			console.log(req.body.roomCode);
 			let song = new db.Queue({
 				trackName: songToAdd.name,
 				artist: songToAdd.artist,
@@ -125,29 +60,16 @@ module.exports = (io) => {
 					$push: { queue: song }
 				}
 			);
-			// await db.Room.update(
-			// 	{roomId: req.body.roomId},
-			// 	{$push:
-			// 		{queue: {
-			// 			trackName: songToAdd.name,
-			// 			artist: songToAdd.artist,
-			// 			album: songToAdd.album,
-			// 			albumArt: songToAdd.images[0].url,
-			// 			uri: songToAdd.uri,
-			// 			duration: trackData.data.duration_ms
-			// 			}
-			// 		}
-			// 	}
-			// );
 			Q = await db.Room.find({ roomCode: req.body.roomCode }, 'queue');
 			Q = Q[0].queue;
 			Q = Q.map((song) => song.uri);
-			console.log(Q);
 			if (Q.length === 1) {
 				postData = {
 					uris: Q
 				};
+				let d = new Date();
 				await axios.put('/me/player/play', postData);
+				await db.Room.update({roomCode: req.body.roomCode}, {$set: {changedat: d.getTime()}});
 				timer.setTimer(req.body.roomCode, 0);
 			} else {
 				await axios.post('/me/player/queue', null, { params: {
@@ -161,41 +83,48 @@ module.exports = (io) => {
 		return res.send('Added to queue').status(200);
 	};
 
-	// exp.playPause = async (req, res) => {
-	// 	try {
-	// 		let resp = await axios.get('/me/player/currently-playing');
-	// 		console.log(resp.data.is_playing);
-	// 		if (resp.data.is_playing) {
-	// 			await axios.put('/me/player/pause');
-	// 		} else {
-	// 			await axios.put('/me/player/play');
-	// 		}
-	// 	} catch (e) {
-	// 		return res.send(e);
-	// 	}
-	// 	return res.send('Play or Paused. Whatever it was.').status(200);
-	// };
-
-	exp.play = async (req, res) => {
+	exp.playPause = async (req, res) => {
 		try {
-			let room = await db.Room.find({ _id: req.body.roomId });
-			let d = new Date();
-			await axios.put('/me/player/play', {
-				uris: room.queue,
-				position_ms: d.getTime() - room.changedat
-			});
+			let room = await db.Room.find({ roomCode: req.query.roomCode });
+			let Q = room[0].queue;
+			Q = Q.map((song) => song.uri);
+			let resp = await axios.get('/me/player/currently-playing');
+			if(resp.data.is_playing){
+				await axios.put('/me/player/pause');
+				return res.send('Paused');
+			}
+			else {
+				let d = new Date();
+				console.log('changed at' + room[0].changedat);
+				console.log('now' + d.getTime());
+
+				await axios.put('/me/player/play', {
+					uris: Q,
+					position_ms: d.getTime() - room[0].changedat
+				});
+				return res.send('Played');
+			}
 		} catch (err) {
 			return res.send(err);
 		}
 	};
 
-	exp.pause = async (req, res) => {
+	exp.play = async (roomCode) => {
 		try {
-			await axios.put('/me/player/pause');
-		} catch (err) {
-			return res.send(err);
+			let room = await db.Room.find({roomCode: roomCode});
+			let Q = room[0].queue;
+			Q = Q.map((song) => song.uri);
+			if(Q.length > 0){
+				let d = new Date();
+				await axios.put('/me/player/play', {
+					uris: Q, 
+					position_ms: d.getTime() - room.changedat
+				});
+			}
+		} catch(err) {
+			return console.log(err);
 		}
-	};
+	}
 
 	return exp;
 };

@@ -12,7 +12,7 @@ var generateRandomString = (length) => {
 };
 
 module.exports = (io) => {
-    const spotify = require('./spotify')();
+    const spotify = require('./spotify')(io);
 
     let interval;
     let exp = {};
@@ -20,13 +20,12 @@ module.exports = (io) => {
     exp.createRoom = async (req, res) => {
         try{
             let c = generateRandomString(6);
-            let d = new Date();
             console.log(req.body);
             let room = new db.Room({
                 roomName: req.body.roomName,
                 roomCode: c,
                 queue: [],
-                changedat: d.getTime()
+                changedat: 0
             });
             await room.save();
             console.log('Room created.');
@@ -38,11 +37,8 @@ module.exports = (io) => {
 
     exp.joinRoom = async (req, res) => {
         try {
-            let room;
-            room = await db.Room.find({roomCode: req.query.roomCode});
-            console.log(room);
-            // await io.join(room[0].roomCode);
-            console.log(io.rooms);
+            let room = await db.Room.find({roomCode: req.query.roomCode});
+            spotify.play(req.query.roomCode);
             res.send(room[0]);
         } catch(err) {
             return res.send(err);
@@ -51,8 +47,9 @@ module.exports = (io) => {
 
     exp.leaveRoom = async (req, res) => {
         try{
-            io.leave(req.body.code);
-            clearInterval(interval);
+            io.on('leave_room', socket => {
+                socket.leave(req.body.code);
+            })
         } catch(err) {
             return res.send(err);
         }
