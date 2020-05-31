@@ -3,15 +3,14 @@ import Axios from 'axios';
 import { Link } from 'react-router-dom';
 import banner from '../assets/banner.png';
 import './Home.scss';
-const baseURL = 'http://localhost:8888';
+Axios.defaults.baseURL = 'http://localhost:8888';
 
 export class Home extends Component {
 	componentDidMount() {
-		let token = new URLSearchParams(this.props.location.search).get(
-			'token'
+		let loggedIn = new URLSearchParams(this.props.location.search).get(
+			'loggedIn'
 		);
-		if (token != null) {
-			localStorage.setItem('spotifyToken', token);
+		if (loggedIn === 'true') {
 			localStorage.setItem('loggedIn', 'true');
 		}
 	}
@@ -22,7 +21,7 @@ export class Home extends Component {
 			if (localStorage.getItem('loggedIn') === 'true') {
 				let roomCode = e.target.roomCode.value;
 				sessionStorage.setItem('roomCode', roomCode);
-				await Axios.get(baseURL + '/joinRoom', {
+				await Axios.get('/joinRoom', {
 					params: { roomCode: roomCode }
 				});
 				console.log('Joined room ' + roomCode);

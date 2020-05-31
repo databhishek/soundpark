@@ -42,10 +42,6 @@ const RoomSchema = new mongoose.Schema({
 	roomCode: String,
 	queue: [QueueSchema],
 	changedat: Number
-	// curr: {
-	// 	trackNo: Number,
-	// 	progress: Number
-	// }
 });
 
 exp.User = mongoose.model('User', UserSchema);

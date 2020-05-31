@@ -8,19 +8,6 @@ import Player from './Player/Player';
 import CreateRoom from './CreateRoom/CreateRoom';
 
 class App extends Component {
-	constructor(props) {
-		super(props);
-
-		this.state = {
-			uname: ''
-		};
-
-	}
-
-	componentDidMount() {
-
-	}
-
 	render() {
 		return (
 			<div>
@@ -29,7 +16,6 @@ class App extends Component {
 					<div className='App'>
 						<Switch>
 							<Route exact path='/' component={Home} />
-							{/* <Route path='/login' render={(props) => <Login auth={isUserAuthorized} userLogin={this.userLogin}/>}  /> */}
 							<Route path='/player' component={Player} />
 							<Route path='/createRoom' component={CreateRoom} />
 						</Switch>

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Axios from 'axios';
-const baseURL = 'http://localhost:8888';
+Axios.defaults.baseURL = 'http://localhost:8888';
 
 export class CreateRoom extends Component {
 	constructor(props) {
@@ -15,15 +15,15 @@ export class CreateRoom extends Component {
 	createRoom = async () => {
 		try {
 			let roomName = this.state.roomName;
-			console.log(roomName);
-			let resp = await Axios.post(baseURL + '/createRoom', { roomName });
+			let resp = await Axios.post('/createRoom', { roomName });
 			console.log(resp.status);
 			if (resp.status === 200) {
 				console.log(resp.data);
 				this.setState({ roomCode: resp.data.roomCode });
+
 			}
-		} catch (e) {
-			console.log(e);
+		} catch (err) {
+			console.log(err);
 		}
 	};
 
@@ -36,8 +36,8 @@ export class CreateRoom extends Component {
 				},
 				this.createRoom
 			);
-		} catch (e) {
-			console.log(e);
+		} catch (err) {
+			console.log(err);
 		}
 	};
 
@@ -53,6 +53,7 @@ export class CreateRoom extends Component {
 					/>
 					<button type='submit'>Submit</button>
 				</form>
+				{this.state.roomCode}
 			</div>
 		);
 	}

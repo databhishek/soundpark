@@ -3,7 +3,9 @@ import cover from '../assets/cover.png';
 import Axios from 'axios';
 import './Player.scss';
 import io from 'socket.io-client';
-const baseURL = 'http://localhost:8888';
+Axios.defaults.baseURL = 'http://localhost:8888';
+Axios.defaults.headers['Content-Type'] = 'application/json';
+Axios.defaults.withCredentials = true;
 
 export class Player extends Component {
 	constructor(props) {
@@ -24,22 +26,21 @@ export class Player extends Component {
 				uri: '',
 				albumArt: ''
 			},
-			roomCode: sessionStorage.getItem('roomCode'),
+			room: sessionStorage.getItem('roomCode'),
 			queue: []
 		};
 	}
 
 	componentDidMount() {
-		this.getNowPlaying();
-		const socket = io.connect(baseURL);
+		const socket = io.connect('http://localhost:8888');
 		socket.on('joined_room', (data) => {
 			this.setState({
 				queue: data
 			});
 		});
-		socket.emit('join_room', this.state.roomCode);
+		socket.emit('join_room', this.state.room);
 		socket.on('currently_playing', (data) => {
-			console.log('Grabbed event!');
+			console.log('Song change event.');
 			if (data != null) {
 				this.setState({
 					nowPlaying: {
@@ -49,17 +50,14 @@ export class Player extends Component {
 				});
 			}
 		});
+		this.getNowPlaying();
 	}
 
 	getNowPlaying = async () => {
-		console.log('Called now playing!');
-		const url = baseURL + '/currentlyPlaying';
 		try {
-			let resp = await Axios.get(url, {
-				params: { accessToken: localStorage.getItem('spotifyToken') }
-			});
+			console.log('Fetched currently playing.');
+			let resp = await Axios.get('/currentlyPlaying');
 			resp = resp.data;
-
 			if (resp.item) {
 				this.setState({
 					nowPlaying: {
@@ -75,19 +73,17 @@ export class Player extends Component {
 					}
 				});
 			}
-		} catch (e) {
-			console.log(e);
+		} catch(err) {
+			console.log(err);
 		}
 	};
 
 	searchSong = async () => {
 		try {
-			const url = baseURL + '/searchTrack';
 			const searchValue = this.state.searchValue;
-			console.log(searchValue);
-			let resp = await Axios.get(url, {
+			console.log('Searched: ' + searchValue);
+			let resp = await Axios.get('/searchTrack', {
 				params: {
-					accessToken: localStorage.getItem('spotifyToken'),
 					searchValue: searchValue
 				}
 			});
@@ -104,53 +100,49 @@ export class Player extends Component {
 					albumArt: resp.tracks.items[0].album.images[0]
 				}
 			});
-		} catch (e) {
-			console.log(e);
+		} catch(err) {
+			console.log(err);
 		}
 	};
 
 	addToQueue = async () => {
-		const url = baseURL + '/addToQueue';
-		const searchResult = this.state.searchResult;
-		let track = {
-			id: searchResult.id,
-			name: searchResult.name,
-			artist: searchResult.artist,
-			album: searchResult.album,
-			uri: searchResult.uri,
-			albumArt: searchResult.albumArt
-		};
 		try {
-			let roomCode = this.state.roomCode;
-			console.log(roomCode);
-			let resp = await Axios.post(url, {
-				accessToken: localStorage.getItem('spotifyToken'),
+			const searchResult = this.state.searchResult;
+			let track = {
+				id: searchResult.id,
+				name: searchResult.name,
+				artist: searchResult.artist,
+				album: searchResult.album,
+				uri: searchResult.uri,
+				albumArt: searchResult.albumArt
+			};
+			let roomCode = this.state.room;
+			let resp = await Axios.post('/addToQueue', {
 				roomCode,
 				track
 			});
 			console.log(resp.data);
 			this.setState({
 				queue: resp.data
-			})
+			});
 			console.log('Added to queue.');
-		} catch (e) {
-			console.log(e);
+			this.getNowPlaying();
+		} catch(err) {
+			console.log(err);
 		}
 	};
 
 	playPause = async () => {
-		const url = baseURL + '/playPause';
 		try {
-			let roomCode = localStorage.getItem('roomCode');
-			let resp = await Axios.get(url, {
+			let roomCode = sessionStorage.getItem('roomCode');
+			let resp = await Axios.get('/playPause', {
 				params: {
-					accessToken: localStorage.getItem('spotifyToken'),
 					roomCode: roomCode
 				}
 			});
 			console.log(resp);
-		} catch (e) {
-			console.log(e);
+		} catch(err) {
+			console.log(err);
 		}
 	};
 
@@ -163,9 +155,10 @@ export class Player extends Component {
 	};
 
 	render() {
-		let result;
 		const { searchedYet, name, album, artist } = this.state.searchResult;
-		const { nowPlaying } = this.state;
+		const { nowPlaying, queue } = this.state;
+		
+		let result;
 		if (searchedYet) {
 			result = (
 				<div className='search-res'>
@@ -179,9 +172,12 @@ export class Player extends Component {
 
 		let queueListItems = (
 			<ul className='queue-list'>
-				{this.state.queue.map((song) => <li key={song.uri}>{song.trackName}</li>)}
+				{queue.map((song) => (
+					<li key={song.uri}>{song.trackName} - {song.artist}</li>
+				))}
 			</ul>
-		)
+		);
+
 		return (
 			<div>
 				<div className='player-container'>
@@ -191,9 +187,6 @@ export class Player extends Component {
 						src={nowPlaying.albumArt}
 						alt='albumArt'
 					/>
-					{/* <button className='control-btns' onClick={this.playPrevSong}>
-						Prev
-					</button> */}
 					<button className='control-btns' onClick={this.playPause}>
 						Play/Pause
 					</button>
@@ -210,7 +203,7 @@ export class Player extends Component {
 				</div>
 				<div className='queue-container'>
 					<h2> QUEUE </h2>
-					{queueListItems}	
+					{queueListItems}
 				</div>
 			</div>
 		);
