@@ -35,7 +35,7 @@ module.exports = () => {
 					client_id: process.env.SPOTIFY_CLIENT_ID,
 					scope: scope,
 					redirect_uri: process.env.SPOTIFY_REDIRECT_URI,
-					state: state,
+					state: state
 				})
 		);
 	};
@@ -52,7 +52,7 @@ module.exports = () => {
 			res.redirect(
 				'/#' +
 					querystring.stringify({
-						error: 'state_mismatch',
+						error: 'state_mismatch'
 					})
 			);
 		} else {
@@ -62,7 +62,7 @@ module.exports = () => {
 				form: {
 					code: code,
 					redirect_uri: process.env.SPOTIFY_REDIRECT_URI,
-					grant_type: 'authorization_code',
+					grant_type: 'authorization_code'
 				},
 				headers: {
 					Authorization:
@@ -71,9 +71,9 @@ module.exports = () => {
 							process.env.SPOTIFY_CLIENT_ID +
 								':' +
 								process.env.SPOTIFY_CLIENT_SECRET
-						).toString('base64'),
+						).toString('base64')
 				},
-				json: true,
+				json: true
 			};
 
 			request.post(authOptions, (error, response, body) => {
@@ -85,15 +85,15 @@ module.exports = () => {
 					axios
 						.get('https://api.spotify.com/v1/me', {
 							headers: {
-								Authorization: 'Bearer ' + access_token,
-							},
+								Authorization: 'Bearer ' + access_token
+							}
 						})
 						.then((resp) => {
 							console.log(resp);
 							let userDbEntry = new db.User({
 								spotifyID: resp.data.id,
 								spotifyAccessToken: access_token,
-								spotifyRefreshToken: refresh_token,
+								spotifyRefreshToken: refresh_token
 							});
 							userDbEntry.save((err) => {
 								console.log('Duplicate user error in MONGO.');
@@ -102,19 +102,18 @@ module.exports = () => {
 						})
 						.catch((err) => console.log(err));
 
-
 					// we can also pass the token to the browser to make requests from there
 					res.redirect(
 						'http://localhost:3000/player?' +
 							querystring.stringify({
-								authorized: true,
+								authorized: true
 							})
 					);
 				} else {
 					res.redirect(
 						'/#' +
 							querystring.stringify({
-								error: 'invalid_token',
+								error: 'invalid_token'
 							})
 					);
 				}
@@ -130,24 +129,26 @@ module.exports = () => {
 			headers: {
 				Authorization:
 					'Basic ' +
-					new Buffer(client_id + ':' + client_secret).toString('base64'),
+					new Buffer(client_id + ':' + client_secret).toString(
+						'base64'
+					)
 			},
 			form: {
 				grant_type: 'refresh_token',
-				refresh_token: refresh_token,
+				refresh_token: refresh_token
 			},
-			json: true,
+			json: true
 		};
 
 		request.post(authOptions, (error, response, body) => {
 			if (!error && response.statusCode === 200) {
 				var access_token = body.access_token;
 				res.send({
-					access_token: access_token,
+					access_token: access_token
 				});
 			}
 		});
 	};
 
 	return exp;
-}
+};

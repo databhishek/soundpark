@@ -24,17 +24,20 @@ export class Player extends Component {
 				uri: '',
 				albumArt: ''
 			},
-			roomCode: localStorage.getItem('roomCode')
+			roomCode: sessionStorage.getItem('roomCode'),
+			queue: []
 		};
 	}
 
 	componentDidMount() {
 		this.getNowPlaying();
 		const socket = io.connect(baseURL);
-		socket.emit('join_room', this.state.roomCode);
 		socket.on('joined_room', (data) => {
-			console.log(data);
-		})
+			this.setState({
+				queue: data
+			});
+		});
+		socket.emit('join_room', this.state.roomCode);
 		socket.on('currently_playing', (data) => {
 			console.log('Grabbed event!');
 			if (data != null) {
@@ -52,8 +55,9 @@ export class Player extends Component {
 		console.log('Called now playing!');
 		const url = baseURL + '/currentlyPlaying';
 		try {
-			let resp = await Axios.get(url);
-			// console.log(resp);
+			let resp = await Axios.get(url, {
+				params: { accessToken: localStorage.getItem('spotifyToken') }
+			});
 			resp = resp.data;
 
 			if (resp.item) {
@@ -76,23 +80,16 @@ export class Player extends Component {
 		}
 	};
 
-	playNextSong = async () => {
-		const url = baseURL + '/playNext';
-		try {
-			let resp = await Axios.get(url);
-			this.getNowPlaying();
-		} catch (e) {
-			console.log(e);
-		}
-	};
-
 	searchSong = async () => {
 		try {
 			const url = baseURL + '/searchTrack';
 			const searchValue = this.state.searchValue;
 			console.log(searchValue);
 			let resp = await Axios.get(url, {
-				params: { searchValue: searchValue }
+				params: {
+					accessToken: localStorage.getItem('spotifyToken'),
+					searchValue: searchValue
+				}
 			});
 			resp = resp.data;
 			console.log(resp);
@@ -126,20 +123,31 @@ export class Player extends Component {
 		try {
 			let roomCode = this.state.roomCode;
 			console.log(roomCode);
-			await Axios.post(url, { roomCode, track });
-			console.log('Added to queue');
+			let resp = await Axios.post(url, {
+				accessToken: localStorage.getItem('spotifyToken'),
+				roomCode,
+				track
+			});
+			console.log(resp.data);
+			this.setState({
+				queue: resp.data
+			})
+			console.log('Added to queue.');
 		} catch (e) {
 			console.log(e);
 		}
-		this.getNowPlaying();
 	};
 
 	playPause = async () => {
 		const url = baseURL + '/playPause';
 		try {
 			let roomCode = localStorage.getItem('roomCode');
-			let resp = await Axios.get(url, { params: {roomCode: roomCode}});
-			this.getNowPlaying();
+			let resp = await Axios.get(url, {
+				params: {
+					accessToken: localStorage.getItem('spotifyToken'),
+					roomCode: roomCode
+				}
+			});
 			console.log(resp);
 		} catch (e) {
 			console.log(e);
@@ -169,33 +177,41 @@ export class Player extends Component {
 			);
 		}
 
+		let queueListItems = (
+			<ul className='queue-list'>
+				{this.state.queue.map((song) => <li key={song.uri}>{song.trackName}</li>)}
+			</ul>
+		)
 		return (
-			<div className='player-container'>
-				<h3>Now Playing</h3> <h3>{nowPlaying.name}</h3>
-				<img
-					className='album-art'
-					src={nowPlaying.albumArt}
-					alt='albumArt'
-				/>
-				{/* <button className='control-btns' onClick={this.playPrevSong}>
-					Prev
-				</button> */}
-				<button className='control-btns' onClick={this.playPause}>
-					Play/Pause
-				</button>
-				<button className='control-btns' onClick={this.playNextSong}>
-					Next
-				</button>
-				<form onSubmit={this.handleSearch}>
-					<input
-						type='text'
-						placeholder='Search for a song...'
-						name='searchValue'></input>
-					<button className='search-btn' type='submit'>
-						&rarr;
+			<div>
+				<div className='player-container'>
+					<h3>Now Playing</h3> <h3>{nowPlaying.name}</h3>
+					<img
+						className='album-art'
+						src={nowPlaying.albumArt}
+						alt='albumArt'
+					/>
+					{/* <button className='control-btns' onClick={this.playPrevSong}>
+						Prev
+					</button> */}
+					<button className='control-btns' onClick={this.playPause}>
+						Play/Pause
 					</button>
-				</form>
-				{result}
+					<form onSubmit={this.handleSearch}>
+						<input
+							type='text'
+							placeholder='Search for a song...'
+							name='searchValue'></input>
+						<button className='search-btn' type='submit'>
+							&rarr;
+						</button>
+					</form>
+					{result}
+				</div>
+				<div className='queue-container'>
+					<h2> QUEUE </h2>
+					{queueListItems}	
+				</div>
 			</div>
 		);
 	}

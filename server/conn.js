@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/spotify', {
 	useNewUrlParser: true,
 	useUnifiedTopology: true,
+	useFindAndModify: false
 });
 
 mongoose.set('useCreateIndex', true);

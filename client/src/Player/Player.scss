@@ -46,3 +46,20 @@ $green : #1DB954;
         font-family: 'Helvetica', sans-serif;
     }
 }
+
+.queue-container {
+    display: block;
+    margin: auto;
+    margin-top: 1em;
+    overflow: auto;
+    width: 30em;
+    height: 20em;
+    border: 3px solid white;
+    border-radius: 5px;
+    box-shadow: 5px 5px 10px 1px darkgrey;
+
+    .queue-list {
+        list-style: none;
+        padding: 0; 
+    }
+}

@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
 import Axios from 'axios';
 const baseURL = 'http://localhost:8888';
 
@@ -54,7 +53,6 @@ export class CreateRoom extends Component {
 					/>
 					<button type='submit'>Submit</button>
 				</form>
-				<ToastContainer />
 			</div>
 		);
 	}

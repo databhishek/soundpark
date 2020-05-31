@@ -6,20 +6,53 @@ import './Home.scss';
 const baseURL = 'http://localhost:8888';
 
 export class Home extends Component {
+	componentDidMount() {
+		let token = new URLSearchParams(this.props.location.search).get(
+			'token'
+		);
+		if (token != null) {
+			localStorage.setItem('spotifyToken', token);
+			localStorage.setItem('loggedIn', 'true');
+		}
+	}
+
 	handleSubmit = async (e) => {
 		try {
 			e.preventDefault();
-			let roomCode = e.target.roomCode.value;
-			localStorage.setItem('roomCode', roomCode);
-			let resp = await Axios.get(baseURL + '/joinRoom', {
-				params: { roomCode: roomCode }
-			});
-		} catch(e) {
-			console.log(e);
+			if (localStorage.getItem('loggedIn') === 'true') {
+				let roomCode = e.target.roomCode.value;
+				sessionStorage.setItem('roomCode', roomCode);
+				await Axios.get(baseURL + '/joinRoom', {
+					params: { roomCode: roomCode }
+				});
+				console.log('Joined room ' + roomCode);
+				window.location.href = '/player';
+			} else {
+				console.log('Not logged in.');
+			}
+		} catch (err) {
+			console.log(err);
 		}
 	};
 
 	render() {
+		let Btns =
+			localStorage.getItem('loggedIn') === 'true' ? (
+				<div>
+					<Link to='/createRoom'>
+						<button className='skewBtn blue'>Create</button>
+					</Link>
+					<Link to='/player'>
+						<button className='skewBtn blue'>Player</button>
+					</Link>
+				</div>
+			) : (
+				<div>
+					<a href='http://localhost:8888/auth/spotify'>
+						<button className='skewBtn green'>Login</button>
+					</a>
+				</div>
+			);
 		return (
 			<div className='home-container'>
 				<img className='banner' src={banner} alt='banner' />
@@ -34,12 +67,7 @@ export class Home extends Component {
 						&rarr;
 					</button>
 				</form>
-				<a href='http://localhost:8888/spotify/login'>
-					<button className='skewBtn green'>Login</button>
-				</a>
-				<Link to='/createRoom'>
-					<button className='skewBtn blue'>Create</button>
-				</Link>
+				{Btns}
 			</div>
 		);
 	}

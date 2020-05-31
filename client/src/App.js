@@ -12,25 +12,16 @@ class App extends Component {
 		super(props);
 
 		this.state = {
-			uname: '',
-			isUserAuthorized: false
+			uname: ''
 		};
 
-		sessionStorage.setItem('isLoggedIn', false);
 	}
 
 	componentDidMount() {
-		this.setState({
-			isUserAuthorized: sessionStorage.getItem('isLoggedIn')
-		});
+
 	}
 
-	userLogin = () => {
-		window.location.assign('http://localhost:8888/spotify/login');
-	};
-
 	render() {
-		const { isUserAuthorized } = this.state;
 		return (
 			<div>
 				<Header />
