@@ -33,7 +33,12 @@ module.exports = (passport) => {
 					},
 					(err) => {
 						if (err) console.log(err);
-						else return done(null, accessToken);
+						else
+							return done(null, {
+								profile: profile,
+								accessToken: accessToken,
+								refreshToken: refreshToken
+							});
 					}
 				);
 			}

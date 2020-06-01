@@ -12,7 +12,7 @@ module.exports = (io) => {
 	exp.getCurrentlyPlaying = async (req, res) => {
 		try {
 			let resp = await axios.get('/me/player/currently-playing', {
-				headers: { Authorization: 'Bearer ' + req.user }
+				headers: { Authorization: 'Bearer ' + req.user.accessToken }
 			});
 			return res.send(resp.data).status(200);
 		} catch (e) {
@@ -28,7 +28,7 @@ module.exports = (io) => {
 					q: req.query.searchValue,
 					type: 'track'
 				},
-				headers: { Authorization: 'Bearer ' + req.user }
+				headers: { Authorization: 'Bearer ' + req.user.accessToken }
 			});
 			return res.send(resp.data).status(200);
 		} catch (e) {
@@ -41,10 +41,10 @@ module.exports = (io) => {
 		try {
 			let songToAdd = req.body.track;
 			let trackData = await axios.get('/tracks/' + songToAdd.id, {
-				headers: { Authorization: 'Bearer ' + req.user }
+				headers: { Authorization: 'Bearer ' + req.user.accessToken }
 			});
 			let currSong = await axios.get('/me/player/currently-playing', {
-				headers: { Authorization: 'Bearer ' + req.user }
+				headers: { Authorization: 'Bearer ' + req.user.accessToken }
 			});
 			let song = new db.Queue({
 				trackName: songToAdd.name,
@@ -73,10 +73,10 @@ module.exports = (io) => {
 					'/me/player/play',
 					{ uris: Q },
 					{
-						headers: { Authorization: 'Bearer ' + req.user }
+						headers: { Authorization: 'Bearer ' + req.user.accessToken }
 					}
 				);
-				await db.Room.update(
+				await db.Room.updateOne(
 					{ roomCode: req.body.roomCode },
 					{ $set: { changedat: d.getTime() } }
 				);
@@ -86,7 +86,7 @@ module.exports = (io) => {
 					params: {
 						uri: Q[Q.length - 1]
 					},
-					headers: { Authorization: 'Bearer ' + req.user }
+					headers: { Authorization: 'Bearer ' + req.user.accessToken }
 				});
 				timer.setTimer(req.body.roomCode, currSong.data.progress_ms);
 			}
@@ -102,11 +102,11 @@ module.exports = (io) => {
 			let Q = room[0].queue;
 			Q = Q.map((song) => song.uri);
 			let resp = await axios.get('/me/player/currently-playing', {
-				headers: { Authorization: 'Bearer ' + req.user }
+				headers: { Authorization: 'Bearer ' + req.user.accessToken }
 			});
 			if (resp.data.is_playing) {
 				await axios.put('/me/player/pause', null, {
-					headers: { Authorization: 'Bearer ' + req.user }
+					headers: { Authorization: 'Bearer ' + req.user.accessToken }
 				});
 				return res.send('Paused');
 			} else {
@@ -121,7 +121,7 @@ module.exports = (io) => {
 						position_ms: d.getTime() - room[0].changedat
 					},
 					{
-						headers: { Authorization: 'Bearer ' + req.user }
+						headers: { Authorization: 'Bearer ' + req.user.accessToken }
 					}
 				);
 				return res.send('Played');

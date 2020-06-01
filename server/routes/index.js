@@ -1,6 +1,11 @@
 const router = require('express').Router();
+const axios = require('axios');
+const qs = require('query-string');
+const db = require('../config/conn');
+require('dotenv').config();
 
 module.exports = (passport, io) => {
+	var userIntervals = {};
 	const spotify = require('./spotify')(io);
 	const room = require('./room')(io);
 
@@ -28,10 +33,41 @@ module.exports = (passport, io) => {
 		'/callback',
 		passport.authenticate('spotify', { failureRedirect: 'http://localhost:3000/?loggedIn=false' }),
 		(req, res) => {
-            // Successful authentication, redirect home.
-			console.log('Successful login.');
-			console.log('Access Token: ' + req.user);
-			res.redirect('http://localhost:3000/?loggedIn=true');
+			try {
+				// Set interval for refreshing token every hour with id as spotify id
+				userIntervals[req.user.profile.id] = setInterval(async () => {
+					console.log('Refreshing token for user: ' + req.user.profile.id);
+					
+					const reqBody = {
+						grant_type: 'refresh_token', 
+						refresh_token: req.user.refreshToken
+					};
+
+					const config = {
+						headers: {
+							'Content-Type': 'application/x-www-form-urlencoded',
+							'Authorization': 'Basic ' + new Buffer(process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET).toString('base64')
+						}
+					};
+
+					let resp = await axios.post('https://accounts.spotify.com/api/token', qs.stringify(reqBody), config);
+					
+					if(resp.status === 200) {
+						console.log('New access token: ' + resp.data.access_token);
+						db.User.updateOne({ spotifyID: req.user.profile.id}, {
+							$set: {
+								spotifyAccessToken: resp.data.access_token
+							}
+						});
+					}
+				}, 3600000);
+				
+				// Successful authentication, redirect home.
+				console.log('Successful login.');
+				res.redirect('http://localhost:3000/?loggedIn=true');
+			} catch (e) {
+				console.log(e);
+			}
 		}
     );
 
