@@ -62,13 +62,17 @@ io.on('connection', (socket) => {
 	// Join Room
 	socket.on('join_room', (roomCode) => {
 		socket.join(roomCode, () => {
-			console.log('Joined room: ' + roomCode);
-			db.Room.find({ roomCode: roomCode }, 'queue', (err, data) => {
-				if (err) console.log(err);
-				else {
-					io.to(roomCode).emit('joined_room', data[0].queue);
-				}
-			});
+			if(roomCode === null) {
+				console.log('No room yet.');
+			} else {
+				console.log('Joined room: ' + roomCode);
+				db.Room.find({ roomCode: roomCode }, 'queue', (err, data) => {
+					if (err) console.log(err);
+					else {
+						io.to(roomCode).emit('joined_room', data[0].queue);
+					}
+				});
+			}
 		});
 	});
 
