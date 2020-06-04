@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Axios from 'axios';
-Axios.defaults.baseURL = 'http://localhost:8888';
+Axios.defaults.baseURL = 'http://localhost:8888/api';
 
 export class CreateRoom extends Component {
 	constructor(props) {

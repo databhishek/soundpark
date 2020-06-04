@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-mongoose.connect('mongodb://localhost/spotify', {
+mongoose.connect(process.env.DB_HOST || 'mongodb://localhost/spotify', {
 	useNewUrlParser: true,
 	useUnifiedTopology: true,
 	useFindAndModify: false

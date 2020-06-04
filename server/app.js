@@ -10,6 +10,13 @@ const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 const routes = require('./routes')(passport, io);
 const db = require('./config/conn');
+const redis = require('redis');
+const redisClient = redis.createClient();
+const redisStore = require('connect-redis')(session);
+
+redisClient.on('error', (err) => {
+	console.log('Redis error: ', err);
+});
 
 // Headers for allowing cross-domain credential access
 app.use((req, res, next) => {
@@ -31,10 +38,11 @@ app.use(express.static(__dirname + '/public'));
 
 app.use(
 	session({
-		secret: 'spotifyParty',
+		secret: 'ThisIsHowYouUseRedisSessionStorage',
+		resave: false,
 		saveUninitialized: true,
-		resave: true,
-		cookie: { maxAge: 3600000 } // 1 Hour
+		cookie: { secure: false }, 
+		store: new redisStore({ host: 'localhost', port: 6379, client: redisClient, ttl: 604800 }),
 	})
 );
 app.use(passport.initialize());
@@ -53,7 +61,7 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-app.use('/', routes);
+app.use('/api', routes);
 
 io.on('connection', (socket) => {
 	// Socket Connected

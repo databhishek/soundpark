@@ -3,7 +3,8 @@ import cover from '../assets/cover.png';
 import Axios from 'axios';
 import './Player.scss';
 import io from 'socket.io-client';
-Axios.defaults.baseURL = 'http://localhost:8888';
+const baseURL = 'http://localhost:8888/api';
+Axios.defaults.baseURL = baseURL;
 Axios.defaults.headers['Content-Type'] = 'application/json';
 Axios.defaults.withCredentials = true;
 
@@ -32,7 +33,7 @@ export class Player extends Component {
 	}
 
 	componentDidMount() {
-		const socket = io.connect('http://localhost:8888');
+		const socket = io.connect(baseURL);
 		socket.on('joined_room', (data) => {
 			this.setState({
 				queue: data
@@ -42,6 +43,7 @@ export class Player extends Component {
 		socket.on('currently_playing', (data) => {
 			console.log('Song change event.');
 			if (data != null) {
+				this.state.queue.shift();
 				this.setState({
 					nowPlaying: {
 						name: data.trackName,
@@ -157,7 +159,6 @@ export class Player extends Component {
 	render() {
 		const { searchedYet, name, album, artist } = this.state.searchResult;
 		const { nowPlaying, queue } = this.state;
-		
 		let result;
 		if (searchedYet) {
 			result = (

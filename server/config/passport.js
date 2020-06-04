@@ -3,12 +3,10 @@ const db = require('./conn');
 
 module.exports = (passport) => {
 	passport.serializeUser((User, done) => {
-		console.log(User);
 		return done(null, User);
 	});
 
 	passport.deserializeUser((User, done) => {
-		console.log(User);
 		return done(null, User);
 	});
 

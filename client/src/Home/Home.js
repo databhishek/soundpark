@@ -3,7 +3,8 @@ import Axios from 'axios';
 import { Link } from 'react-router-dom';
 import banner from '../assets/banner.png';
 import './Home.scss';
-Axios.defaults.baseURL = 'http://localhost:8888';
+const baseURL = 'http://localhost:8888/api';
+Axios.defaults.baseURL = baseURL;
 
 export class Home extends Component {
 	componentDidMount() {
@@ -47,7 +48,7 @@ export class Home extends Component {
 				</div>
 			) : (
 				<div>
-					<a href='http://localhost:8888/auth/spotify'>
+					<a href = {baseURL + '/auth/spotify'}>
 						<button className='skewBtn green'>Login</button>
 					</a>
 				</div>

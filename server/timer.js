@@ -14,13 +14,12 @@ module.exports = (io) => {
 			}
 			timerVal -= progress;
 			let timeOut = setTimeout(async () => {
-				let d = new Date();
 				let room = await db.Room.findOneAndUpdate(
 					{ roomCode: roomCode },
-					{ $pop: { queue: -1 }, $set: { changedat: d.getTime() } }
+					{ $pop: { queue: -1 }, $set: { changedat: (new Date).getTime() } }
 				);
 				io.to(roomCode).emit('currently_playing', room.queue[1]);
-				console.log("Emitted for currently playing.");
+				console.log(room);
 			}, timerVal);
 		} catch(err) {
 			console.log(err);

@@ -14,7 +14,6 @@ var generateRandomString = (length) => {
 module.exports = (io) => {
 	const spotify = require('./spotify')(io);
 
-	let interval;
 	let exp = {};
 
 	exp.createRoom = async (req, res) => {
@@ -38,8 +37,10 @@ module.exports = (io) => {
 	exp.joinRoom = async (req, res) => {
 		try {
 			let room = await db.Room.find({ roomCode: req.query.roomCode });
-			spotify.play(req.query.roomCode);
-			res.send(room[0]);
+			if(!room)
+				return res.send('Invalid room code');
+			spotify.join(req.user.accessToken, req.query.roomCode);
+			return res.send(room[0]);
 		} catch (err) {
 			return res.send(err);
 		}

@@ -60,15 +60,13 @@ module.exports = (io) => {
 					$push: { queue: song }
 				}
 			);
-			let Q = await db.Room.find(
-				{ roomCode: req.body.roomCode },
-				'queue'
+			let room = await db.Room.find(
+				{ roomCode: req.body.roomCode }
 			);
-			Q = Q[0].queue;
+			let Q = room[0].queue;
 			let Q2 = Q;
 			Q = Q.map((song) => song.uri);
 			if (Q.length === 1) {
-				let d = new Date();
 				await axios.put(
 					'/me/player/play',
 					{ uris: Q },
@@ -78,10 +76,21 @@ module.exports = (io) => {
 				);
 				await db.Room.updateOne(
 					{ roomCode: req.body.roomCode },
-					{ $set: { changedat: d.getTime() } }
+					{ $set: { changedat: (new Date).getTime() } }
 				);
 				timer.setTimer(req.body.roomCode, 0);
 			} else {
+				// await axios.put(
+				// 	'/me/player/play',
+				// 	{ 
+				// 		uris: Q,
+				// 		offset: {position: 0},
+				// 		position_ms: (new Date).getTime() - room[0].changedat
+				// 	},
+				// 	{
+				// 		headers: { Authorization: 'Bearer ' + req.user.accessToken }
+				// 	}
+				// );
 				await axios.post('/me/player/queue', null, {
 					params: {
 						uri: Q[Q.length - 1]
@@ -99,8 +108,8 @@ module.exports = (io) => {
 	exp.playPause = async (req, res) => {
 		try {
 			let room = await db.Room.find({ roomCode: req.query.roomCode });
-			let Q = room[0].queue;
-			Q = Q.map((song) => song.uri);
+			let Q = [];
+			Q[0] = room[0].queue[0].uri;
 			let resp = await axios.get('/me/player/currently-playing', {
 				headers: { Authorization: 'Bearer ' + req.user.accessToken }
 			});
@@ -110,15 +119,11 @@ module.exports = (io) => {
 				});
 				return res.send('Paused');
 			} else {
-				let d = new Date();
-				// console.log('changed at' + room[0].changedat);
-				// console.log('now' + d.getTime());
-
 				await axios.put(
 					'/me/player/play',
 					{
 						uris: Q,
-						position_ms: d.getTime() - room[0].changedat
+						position_ms: (new Date).getTime() - room[0].changedat
 					},
 					{
 						headers: { Authorization: 'Bearer ' + req.user.accessToken }
@@ -130,6 +135,39 @@ module.exports = (io) => {
 			return res.send(err);
 		}
 	};
+
+	exp.join = async (token, code) => {
+		try {
+			let room = await db.Room.find({ roomCode: code });
+			let Q =  room[0].queue;
+			Q = Q.map((song) => song.uri);
+			let Q2 = [];
+			Q2[0] = Q[0];
+			console.log("Joining....................");	
+			await axios.put(
+				'/me/player/play',
+				{
+					uris: Q2,
+					position_ms: (new Date).getTime() - room[0].changedat
+				},
+				{
+					headers: { Authorization: 'Bearer ' + token }
+				}
+			);
+			console.log("Queueing....................");
+			Q.shift();
+			for (i = 0; i < Q.length; i++) {
+				await axios.post('/me/player/queue', null, {
+					params: {
+						uri: Q[i]
+					},
+					headers: { Authorization: 'Bearer ' + token }
+				});
+			};
+		} catch (err) {
+			console.log(err);
+		}
+	}
 
 	return exp;
 };
