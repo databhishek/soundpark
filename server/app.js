@@ -34,7 +34,7 @@ app.use((req, res, next) => {
 	}
 });
 
-app.use(express.static(__dirname + '/public'));
+app.use(express.static('../client/build'));
 
 app.use(
 	session({
