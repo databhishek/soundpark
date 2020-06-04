@@ -2,9 +2,8 @@ import React, { Component } from 'react';
 import cover from '../assets/cover.png';
 import Axios from 'axios';
 import './Player.scss';
-import io from 'socket.io-client';
-const baseURL = 'http://localhost:8888/api';
-Axios.defaults.baseURL = baseURL;
+import io from 'socket.io-client'; 
+Axios.defaults.baseURL = 'http://localhost:8888/api';;
 Axios.defaults.headers['Content-Type'] = 'application/json';
 Axios.defaults.withCredentials = true;
 
@@ -33,7 +32,7 @@ export class Player extends Component {
 	}
 
 	componentDidMount() {
-		const socket = io.connect(baseURL);
+		const socket = io.connect('http://localhost:8888');
 		socket.on('joined_room', (data) => {
 			this.setState({
 				queue: data
@@ -43,11 +42,13 @@ export class Player extends Component {
 		socket.on('currently_playing', (data) => {
 			console.log('Song change event.');
 			if (data != null) {
-				this.state.queue.shift();
+				let q = this.state.queue.shift();
+				console.log('remove song' + q);
 				this.setState({
 					nowPlaying: {
 						name: data.trackName,
-						albumArt: data.albumArt
+						albumArt: data.albumArt,
+						queue: q
 					}
 				});
 			}
