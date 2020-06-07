@@ -3,7 +3,7 @@ import cover from '../assets/cover.png';
 import Axios from 'axios';
 import './Player.scss';
 import io from 'socket.io-client';
-Axios.defaults.baseURL = 'http://localhost:8888/';
+Axios.defaults.baseURL = 'http://13.233.142.76/api';
 Axios.defaults.headers['Content-Type'] = 'application/json';
 Axios.defaults.withCredentials = true;
 
@@ -32,10 +32,10 @@ export class Player extends Component {
 	}
 
 	componentDidMount() {
-		const socket = io((process.env.MODE === 'PROD') ? (process.env.SERVER_URI) : 'http://localhost:8888', {
+		const socket = io('http://13.233.142.76', {
 			secure: true,
 			rejectUnauthorized: true,
-			path: '/socket.io'
+			path: '/rooms/socket.io'
 		});
 		socket.on('joined_room', (data) => {
 			this.setState({
@@ -56,6 +56,15 @@ export class Player extends Component {
 					}
 				});
 			}
+		});
+		socket.on('add_to_queue', async (data) => {
+			console.log('Add to queue event.');
+			let resp = await Axios.post('/api/queueReturns', {
+				room: this.state.room,
+				id: data.id
+			});
+			console.log(resp);
+			this.getNowPlaying();
 		});
 		this.getNowPlaying();
 	}

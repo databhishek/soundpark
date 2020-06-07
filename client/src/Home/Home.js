@@ -3,11 +3,11 @@ import Axios from 'axios';
 import { Link } from 'react-router-dom';
 import banner from '../assets/banner.png';
 import './Home.scss';
-const baseURL = 'http://localhost:8888/';
+const baseURL = 'http://13.233.142.76/api';
 Axios.defaults.baseURL = baseURL;
 
 export class Home extends Component {
-	componentDidMount() {
+	componentWillMount() {
 		let loggedIn = new URLSearchParams(this.props.location.search).get(
 			'loggedIn'
 		);

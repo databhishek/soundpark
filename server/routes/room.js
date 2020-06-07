@@ -1,5 +1,4 @@
 const db = require('../config/conn');
-require('dotenv').config();
 
 var generateRandomString = (length) => {
 	var text = '';

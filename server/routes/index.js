@@ -18,7 +18,8 @@ module.exports = (passport, io) => {
 	router.get('/currentlyPlaying', spotify.getCurrentlyPlaying);
 	router.get('/searchTrack', spotify.searchTrack);
 	router.post('/addToQueue', spotify.addToQueue);
-    router.get('/playPause', spotify.playPause);
+	router.get('/playPause', spotify.playPause);
+	router.post('/queueReturns', spotify.queueReturns);
     
     // Auth Routes
 	router.get(
@@ -45,7 +46,7 @@ module.exports = (passport, io) => {
 					const config = {
 						headers: {
 							'Content-Type': 'application/x-www-form-urlencoded',
-							'Authorization': 'Basic ' + new Buffer(process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET).toString('base64')
+							'Authorization': 'Basic ' + new Buffer.from(process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET).toString('base64')
 						}
 					};
 

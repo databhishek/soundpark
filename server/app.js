@@ -2,7 +2,6 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const passport = require('passport');
-const cors = require('cors');
 const express = require('express');
 
 const app = express();
@@ -13,26 +12,10 @@ const db = require('./config/conn');
 const redis = require('redis');
 const redisClient = redis.createClient();
 const redisStore = require('connect-redis')(session);
-require('dotenv').config({path: '../.env'});
+require('dotenv').config({ path: '../.env' });
 
 redisClient.on('error', (err) => {
 	console.log('Redis error: ', err);
-});
-
-// Headers for allowing cross-domain credential access
-app.use((req, res, next) => {
-	res.header('Access-Control-Allow-Credentials', true);
-	res.header('Access-Control-Allow-Origin', req.headers.origin);
-	res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-	res.header(
-		'Access-Control-Allow-Headers',
-		'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept'
-	);
-	if ('OPTIONS' == req.method) {
-		res.sendStatus(200);
-	} else {
-		next();
-	}
 });
 
 app.use(
@@ -40,8 +23,13 @@ app.use(
 		secret: process.env.SESS,
 		resave: false,
 		saveUninitialized: true,
-		cookie: { secure: false }, 
-		store: new redisStore({ host: 'localhost', port: 6379, client: redisClient, ttl: 604800 }),
+		cookie: { secure: false },
+		store: new redisStore({
+			host: 'localhost',
+			port: 6379,
+			client: redisClient,
+			ttl: 604800
+		})
 	})
 );
 app.use(passport.initialize());
@@ -53,13 +41,6 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-const corsOptions = {
-	origin: 'http://localhost:3000',
-	credentials: true,
-	optionsSuccessStatus: 200
-};
-app.use(cors(corsOptions));
-
 app.use('/', routes);
 
 io.on('connection', (socket) => {
@@ -69,7 +50,7 @@ io.on('connection', (socket) => {
 	// Join Room
 	socket.on('join_room', (roomCode) => {
 		socket.join(roomCode, () => {
-			if(roomCode === null) {
+			if (roomCode === null) {
 				console.log('No room yet.');
 			} else {
 				console.log('Joined room: ' + roomCode);
@@ -95,5 +76,5 @@ io.on('connection', (socket) => {
 	});
 });
 
-console.log('Listening on 8888');
+console.log('Listening on 8888.');
 server.listen(8888);

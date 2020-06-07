@@ -1,7 +1,5 @@
 const db = require('../config/conn');
 const axios = require('axios');
-require('dotenv').config();
-
 axios.defaults.baseURL = 'https://api.spotify.com/v1';
 
 module.exports = (io) => {
@@ -37,9 +35,43 @@ module.exports = (io) => {
 		}
 	};
 
+	exp.queueReturns = async (req, res) => {
+		try {
+			let room = req.body.room;
+			let id = req.body.id;
+			let Q = await db.Room.find({ roomCode: room }, 'queue');
+			Q = Q[0].queue;
+			Q = Q.map((song) => song.uri);
+			if(req.user.profile.id === id) return res.send('You are the initial user who queued.').status(200);
+			if (Q.length === 1) {
+				await axios.put(
+					'/me/player/play',
+					{ uris: Q },
+					{
+						headers: {
+							Authorization: 'Bearer ' + req.user.accessToken
+						}
+					}
+				);
+			} else {
+				await axios.post('/me/player/queue', null, {
+					params: {
+						uri: Q[Q.length - 1]
+					},
+					headers: { Authorization: 'Bearer ' + req.user.accessToken }
+				});
+			}
+			return res.send('Success.').status(200);
+		} catch (e) {
+			console.log(e);
+			return res.send(e);
+		}
+	};
+
 	exp.addToQueue = async (req, res) => {
 		try {
 			let songToAdd = req.body.track;
+			let room = req.body.roomCode;
 			let trackData = await axios.get('/tracks/' + songToAdd.id, {
 				headers: { Authorization: 'Bearer ' + req.user.accessToken }
 			});
@@ -55,15 +87,17 @@ module.exports = (io) => {
 				duration: trackData.data.duration_ms
 			});
 			await db.Room.findOneAndUpdate(
-				{ roomCode: req.body.roomCode },
+				{ roomCode: room },
 				{
 					$push: { queue: song }
 				}
 			);
-			let room = await db.Room.find(
-				{ roomCode: req.body.roomCode }
+			io.to(room).emit('add_to_queue', { id: req.user.profile.id });
+			let Q = await db.Room.find(
+				{ roomCode: room },
+				'queue'
 			);
-			let Q = room[0].queue;
+			Q = Q[0].queue;
 			let Q2 = Q;
 			Q = Q.map((song) => song.uri);
 			if (Q.length === 1) {
@@ -75,10 +109,10 @@ module.exports = (io) => {
 					}
 				);
 				await db.Room.updateOne(
-					{ roomCode: req.body.roomCode },
+					{ roomCode: room },
 					{ $set: { changedat: (new Date).getTime() } }
 				);
-				timer.setTimer(req.body.roomCode, 0);
+				timer.setTimer(room, 0);
 			} else {
 				await axios.post('/me/player/queue', null, {
 					params: {
@@ -86,7 +120,7 @@ module.exports = (io) => {
 					},
 					headers: { Authorization: 'Bearer ' + req.user.accessToken }
 				});
-				timer.setTimer(req.body.roomCode, currSong.data.progress_ms);
+				timer.setTimer(room, currSong.data.progress_ms);
 			}
 			return res.send(Q2).status(200);
 		} catch (e) {
