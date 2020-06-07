@@ -59,7 +59,7 @@ export class Player extends Component {
 		});
 		socket.on('add_to_queue', async (data) => {
 			console.log('Add to queue event.');
-			let resp = await Axios.post('/api/queueReturns', {
+			let resp = await Axios.post('/queueReturns', {
 				room: this.state.room,
 				id: data.id
 			});

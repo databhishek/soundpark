@@ -48,7 +48,7 @@ export class Home extends Component {
 				</div>
 			) : (
 				<div>
-					<a href = {baseURL + 'auth/spotify'}>
+					<a href = {baseURL + '/auth/spotify'}>
 						<button className='skewBtn green'>Login</button>
 					</a>
 				</div>
