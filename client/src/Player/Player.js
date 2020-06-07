@@ -38,16 +38,18 @@ export class Player extends Component {
 			path: '/rooms/socket.io'
 		});
 		socket.on('joined_room', (data) => {
-			this.setState({
-				queue: data
-			});
+			if(data !== null) {
+				this.setState({
+					queue: data
+				});
+			}
 		});
 		socket.emit('join_room', this.state.room);
 		socket.on('currently_playing', (data) => {
 			console.log('Song change event.');
-			if (data != null) {
+			if (data !== null) {
 				let q = this.state.queue.shift();
-				console.log('remove song' + q);
+				console.log('Remove song: ' + q);
 				this.setState({
 					nowPlaying: {
 						name: data.trackName,
@@ -132,7 +134,7 @@ export class Player extends Component {
 				uri: searchResult.uri,
 				albumArt: searchResult.albumArt
 			};
-			let roomCode = this.state.room;
+			let roomCode = sessionStorage.getItem('roomCode');
 			let resp = await Axios.post('/addToQueue', {
 				roomCode,
 				track

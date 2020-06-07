@@ -164,6 +164,7 @@ module.exports = (io) => {
 			let room = await db.Room.find({ roomCode: code });
 			let Q =  room[0].queue;
 			Q = Q.map((song) => song.uri);
+			console.log(Q);
 			let Q2 = [];
 			Q2[0] = Q[0];
 			if(Q.length > 0) {
@@ -178,6 +179,7 @@ module.exports = (io) => {
 					}
 				);
 			}
+			console.log(Q);
 			Q.shift();
 			for (i = 0; i < Q.length; i++) {
 				await axios.post('/me/player/queue', null, {
