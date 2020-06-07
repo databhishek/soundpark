@@ -13,6 +13,7 @@ const db = require('./config/conn');
 const redis = require('redis');
 const redisClient = redis.createClient();
 const redisStore = require('connect-redis')(session);
+require('dotenv').config({path: '../.env'});
 
 redisClient.on('error', (err) => {
 	console.log('Redis error: ', err);
