@@ -11,7 +11,7 @@ module.exports = (passport, io) => {
 	//Room Routes
 	router.post('/createRoom', room.createRoom);
 	router.get('/joinRoom', room.joinRoom);
-	router.get('/leaveRoom', room.joinRoom);
+	router.get('/leaveRoom', room.leaveRoom);
 	router.get('/rooms', room.getRooms);
 
     // Spotify Routes

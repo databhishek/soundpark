@@ -58,7 +58,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 const corsOptions = {
-	origin: 'http://13.233.142.76',
+	origin: 'http://localhost:3000',
 	credentials: true,
 	optionsSuccessStatus: 200
 };
