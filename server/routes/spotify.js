@@ -80,17 +80,6 @@ module.exports = (io) => {
 				);
 				timer.setTimer(req.body.roomCode, 0);
 			} else {
-				// await axios.put(
-				// 	'/me/player/play',
-				// 	{ 
-				// 		uris: Q,
-				// 		offset: {position: 0},
-				// 		position_ms: (new Date).getTime() - room[0].changedat
-				// 	},
-				// 	{
-				// 		headers: { Authorization: 'Bearer ' + req.user.accessToken }
-				// 	}
-				// );
 				await axios.post('/me/player/queue', null, {
 					params: {
 						uri: Q[Q.length - 1]
@@ -143,18 +132,18 @@ module.exports = (io) => {
 			Q = Q.map((song) => song.uri);
 			let Q2 = [];
 			Q2[0] = Q[0];
-			console.log("Joining....................");	
-			await axios.put(
-				'/me/player/play',
-				{
-					uris: Q2,
-					position_ms: (new Date).getTime() - room[0].changedat
-				},
-				{
-					headers: { Authorization: 'Bearer ' + token }
-				}
-			);
-			console.log("Queueing....................");
+			if(Q.length > 0) {
+				await axios.put(
+					'/me/player/play',
+					{
+						uris: Q2,
+						position_ms: (new Date).getTime() - room[0].changedat
+					},
+					{
+						headers: { Authorization: 'Bearer ' + token }
+					}
+				);
+			}
 			Q.shift();
 			for (i = 0; i < Q.length; i++) {
 				await axios.post('/me/player/queue', null, {

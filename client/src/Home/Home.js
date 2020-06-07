@@ -3,7 +3,7 @@ import Axios from 'axios';
 import { Link } from 'react-router-dom';
 import banner from '../assets/banner.png';
 import './Home.scss';
-const baseURL = 'http://localhost:8888/api';
+const baseURL = (process.env.MODE == 'PROD') ? (process.env.SERVER_URI + 'api') : 'http://localhost:8888/';
 Axios.defaults.baseURL = baseURL;
 
 export class Home extends Component {

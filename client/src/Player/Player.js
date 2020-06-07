@@ -2,8 +2,9 @@ import React, { Component } from 'react';
 import cover from '../assets/cover.png';
 import Axios from 'axios';
 import './Player.scss';
-import io from 'socket.io-client'; 
-Axios.defaults.baseURL = 'http://localhost:8888/api';;
+import io from 'socket.io-client';
+require('dotenv').config({path: '../../'}); 
+Axios.defaults.baseURL = (process.env.MODE == 'PROD') ? (process.env.SERVER_URI + 'api') : 'http://localhost:8888/';
 Axios.defaults.headers['Content-Type'] = 'application/json';
 Axios.defaults.withCredentials = true;
 
@@ -32,7 +33,11 @@ export class Player extends Component {
 	}
 
 	componentDidMount() {
-		const socket = io.connect('http://localhost:8888');
+		const socket = io((process.env.MODE == 'PROD') ? (process.env.SERVER_URI) : 'http://localhost:8888', {
+			secure: true,
+			rejectUnauthorized: true,
+			path: (process.env.MODE == 'PROD') ? 'rooms/socket.io' : '/'
+		});
 		socket.on('joined_room', (data) => {
 			this.setState({
 				queue: data

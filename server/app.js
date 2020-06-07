@@ -34,11 +34,9 @@ app.use((req, res, next) => {
 	}
 });
 
-app.use(express.static('../client/build'));
-
 app.use(
 	session({
-		secret: 'ThisIsHowYouUseRedisSessionStorage',
+		secret: process.env.SESS,
 		resave: false,
 		saveUninitialized: true,
 		cookie: { secure: false }, 
@@ -61,7 +59,7 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-app.use('/api', routes);
+app.use('/', routes);
 
 io.on('connection', (socket) => {
 	// Socket Connected

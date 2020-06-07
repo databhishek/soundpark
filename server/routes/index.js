@@ -2,7 +2,7 @@ const router = require('express').Router();
 const axios = require('axios');
 const qs = require('query-string');
 const db = require('../config/conn');
-require('dotenv').config();
+require('dotenv').config({path: '../../'});
 
 module.exports = (passport, io) => {
 	var userIntervals = {};
@@ -31,7 +31,7 @@ module.exports = (passport, io) => {
 	);
 	router.get(
 		'/callback',
-		passport.authenticate('spotify', { failureRedirect: 'http://localhost:3000/?loggedIn=false' }),
+		passport.authenticate('spotify', { failureRedirect: (process.env.MODE == 'PROD') ? (process.env.SERVER_URI + '?loggedIn=false') : 'http://localhost:3000/?loggedIn=false' }),
 		(req, res) => {
 			try {
 				// Set interval for refreshing token every hour with id as spotify id
@@ -64,7 +64,7 @@ module.exports = (passport, io) => {
 				
 				// Successful authentication, redirect home.
 				console.log('Successful login.');
-				res.redirect('http://localhost:3000/?loggedIn=true');
+				res.redirect((process.env.MODE == 'PROD') ? (process.env.SERVER_URI + '?loggedIn=true'): 'http://localhost:3000/?loggedIn=true');
 			} catch (e) {
 				console.log(e);
 			}
