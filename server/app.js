@@ -2,7 +2,7 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const passport = require('passport');
-const cors = require('cors');
+// const cors = require('cors');
 const express = require('express');
 
 const app = express();
@@ -42,12 +42,12 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-const corsOptions = {
-	origin: 'http://localhost:3000/',
-	credentials: true,
-	optionsSuccessStatus: 200
-};
-app.use(cors(corsOptions));
+// const corsOptions = {
+// 	origin: 'http://localhost:3000/',
+// 	credentials: true,
+// 	optionsSuccessStatus: 200
+// };
+// app.use(cors(corsOptions));
 
 app.use('/', routes);
 
