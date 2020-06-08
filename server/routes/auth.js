@@ -1,7 +1,7 @@
 module.exports = (passport) => {
 	let exp = {};
 
-	exp.redirectSpotify = async (req, res) => {
+	exp.redirectSpotify = (req, res) => {
 		return passport.authenticate('spotify', {
 			scope: [
 				'user-read-private',
@@ -16,7 +16,7 @@ module.exports = (passport) => {
 		});
 	};
 
-	exp.callbackSpotify = async (req, res) => {
+	exp.callbackSpotify = (req, res) => {
 		return passport.authenticate('spotify', {
 			failureRedirect:
 				process.env.MODE === 'PROD'
