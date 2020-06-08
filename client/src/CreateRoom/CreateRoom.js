@@ -20,9 +20,10 @@ export class CreateRoom extends Component {
 			console.log(resp.status);
 			if (resp.status === 200) {
 				console.log(resp.data);
-				this.setState({ roomCode: resp.data.roomCode });
-				let pop = document.getElementById('roomPopup');
-				pop.classList.toggle('show');
+				this.setState({ roomCode: resp.data.roomCode }, () => {
+					let pop = document.getElementById('roomPopup');
+					pop.classList.toggle('show');
+				});
 			}
 		} catch (err) {
 			console.log(err);
