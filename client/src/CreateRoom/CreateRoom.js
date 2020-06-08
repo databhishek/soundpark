@@ -20,6 +20,8 @@ export class CreateRoom extends Component {
 			if (resp.status === 200) {
 				console.log(resp.data);
 				this.setState({ roomCode: resp.data.roomCode });
+				let pop = document.getElementById('roomPopup');
+				pop.classList.toggle('show');
 			}
 		} catch (err) {
 			console.log(err);
@@ -44,11 +46,13 @@ export class CreateRoom extends Component {
 		return (
 			<div>
 				<h2>Create Room</h2>
-				<form onSubmit={this.handleSubmit}>
+				<form className='popup' onSubmit={this.handleSubmit}>
 					<input type='text' name='roomName' placeholder='Room Name' />
 					<button type='submit'>Submit</button>
+					<span className='popuptext' id='roomPopup'>
+						{this.state.roomCode}
+					</span>
 				</form>
-				{this.state.roomCode}
 			</div>
 		);
 	}
