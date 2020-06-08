@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Axios from 'axios';
+import './CreateRoom.scss';
 Axios.defaults.baseURL = 'http://13.233.142.76/api';
 
 export class CreateRoom extends Component {
