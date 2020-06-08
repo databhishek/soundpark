@@ -2,8 +2,7 @@ const db = require('../config/conn');
 
 var generateRandomString = (length) => {
 	var text = '';
-	var possible =
-		'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 	for (var i = 0; i < length; i++) {
 		text += possible.charAt(Math.floor(Math.random() * possible.length));
 	}
@@ -36,8 +35,7 @@ module.exports = (io) => {
 	exp.joinRoom = async (req, res) => {
 		try {
 			let room = await db.Room.find({ roomCode: req.query.roomCode });
-			if(!room)
-				return res.send('Invalid room code');
+			if (!room) return res.send('Invalid room code');
 			spotify.join(req.user.accessToken, req.query.roomCode);
 			return res.send(room[0]);
 		} catch (err) {

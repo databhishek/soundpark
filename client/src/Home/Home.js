@@ -8,9 +8,7 @@ Axios.defaults.baseURL = baseURL;
 
 export class Home extends Component {
 	componentWillMount() {
-		let loggedIn = new URLSearchParams(this.props.location.search).get(
-			'loggedIn'
-		);
+		let loggedIn = new URLSearchParams(this.props.location.search).get('loggedIn');
 		if (loggedIn === 'true') {
 			localStorage.setItem('loggedIn', 'true');
 		}
@@ -48,7 +46,7 @@ export class Home extends Component {
 				</div>
 			) : (
 				<div>
-					<a href = {baseURL + '/auth/spotify'}>
+					<a href={baseURL + '/auth/spotify'}>
 						<button className='skewBtn green'>Login</button>
 					</a>
 				</div>
@@ -57,12 +55,7 @@ export class Home extends Component {
 			<div className='home-container'>
 				<img className='banner' src={banner} alt='banner' />
 				<form onSubmit={this.handleSubmit}>
-					<input
-						className='inp'
-						type='text'
-						placeholder='Enter room to join.'
-						name='roomCode'
-					/>
+					<input className='inp' type='text' placeholder='Enter room to join.' name='roomCode' />
 					<button className='submit-btn' type='submit'>
 						&rarr;
 					</button>

@@ -42,7 +42,7 @@ module.exports = (io) => {
 			let Q = await db.Room.find({ roomCode: room }, 'queue');
 			Q = Q[0].queue;
 			Q = Q.map((song) => song.uri);
-			if(req.user.profile.id === id) return res.send('You are the initial user who queued.').status(200);
+			if (req.user.profile.id === id) return res.send('You are the initial user who queued.').status(200);
 			if (Q.length === 1) {
 				await axios.put(
 					'/me/player/play',
@@ -93,10 +93,7 @@ module.exports = (io) => {
 				}
 			);
 			io.to(room).emit('add_to_queue', { id: req.user.profile.id });
-			let Q = await db.Room.find(
-				{ roomCode: room },
-				'queue'
-			);
+			let Q = await db.Room.find({ roomCode: room }, 'queue');
 			Q = Q[0].queue;
 			let Q2 = Q;
 			Q = Q.map((song) => song.uri);
@@ -108,10 +105,7 @@ module.exports = (io) => {
 						headers: { Authorization: 'Bearer ' + req.user.accessToken }
 					}
 				);
-				await db.Room.updateOne(
-					{ roomCode: room },
-					{ $set: { changedat: (new Date).getTime() } }
-				);
+				await db.Room.updateOne({ roomCode: room }, { $set: { changedat: new Date().getTime() } });
 				timer.setTimer(room, 0);
 			} else {
 				await axios.post('/me/player/queue', null, {
@@ -146,7 +140,7 @@ module.exports = (io) => {
 					'/me/player/play',
 					{
 						uris: Q,
-						position_ms: (new Date).getTime() - room[0].changedat
+						position_ms: new Date().getTime() - room[0].changedat
 					},
 					{
 						headers: { Authorization: 'Bearer ' + req.user.accessToken }
@@ -162,17 +156,17 @@ module.exports = (io) => {
 	exp.join = async (token, code) => {
 		try {
 			let room = await db.Room.find({ roomCode: code });
-			let Q =  room[0].queue;
+			let Q = room[0].queue;
 			Q = Q.map((song) => song.uri);
 			console.log(Q);
 			let Q2 = [];
 			Q2[0] = Q[0];
-			if(Q.length > 0) {
+			if (Q.length > 0) {
 				await axios.put(
 					'/me/player/play',
 					{
 						uris: Q2,
-						position_ms: (new Date).getTime() - room[0].changedat
+						position_ms: new Date().getTime() - room[0].changedat
 					},
 					{
 						headers: { Authorization: 'Bearer ' + token }
@@ -188,11 +182,54 @@ module.exports = (io) => {
 					},
 					headers: { Authorization: 'Bearer ' + token }
 				});
-			};
+			}
 		} catch (err) {
 			console.log(err);
 		}
-	}
+	};
+
+	exp.playNext = async (req, res) => {
+		try {
+			let roomCode = req.body.roomCode;
+			timer.clearTimers(roomCode);
+			let room = await db.Room.findOneAndUpdate(
+				{ roomCode: roomCode },
+				{ $pop: { queue: -1 }, $set: { changedat: new Date().getTime() } }
+			);
+			let Q = room.queue;
+			Q.shift(); // Mongo returns queue before the update
+			if (Q.length > 0) {
+				await axios.post('/me/player/next', null, {
+					headers: { Authorization: 'Bearer ' + req.user.accessToken }
+				});
+				io.to(roomCode).emit('currently_playing', { song: Q[0], playedNext: true, id: req.user.profile.id });
+			}
+			let durationSum = 0;
+			for (i = 0; i < Q.length; i++) {
+				durationSum += Q[i].duration;
+				timer.setNextTimer(roomCode, durationSum);
+			}
+
+			return res.send('Success.');
+		} catch (err) {
+			console.log(err);
+			return res.send(err);
+		}
+	};
+
+	exp.playNextReturns = async (req, res) => {
+		try {
+			let id = req.body.id;
+			if(req.user.profile.id === id) return res.send('You are the one who pressed next.').status(200);
+			await axios.post('/me/player/next', null, {
+				headers: { Authorization: 'Bearer ' + req.user.accessToken }
+			});
+			return res.send('Success.').status(200);
+		} catch (err) {
+			console.log(err);
+			return res.send(err);
+		}
+	};
 
 	return exp;
 };

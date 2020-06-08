@@ -38,22 +38,25 @@ export class Player extends Component {
 			path: '/rooms/socket.io'
 		});
 		socket.on('joined_room', (data) => {
-			if(data !== null) {
+			if (data !== null) {
 				this.setState({
 					queue: data
 				});
 			}
 		});
 		socket.emit('join_room', this.state.room);
-		socket.on('currently_playing', (data) => {
+		socket.on('currently_playing', async (data) => {
 			console.log('Song change event.');
-			if (data !== null) {
+			if (data.song !== null) {
+				if (data.playedNext === true) {
+					await Axios.post('/playNextReturns', { id: data.id });
+				}
 				let q = this.state.queue.shift();
 				console.log('Remove song: ' + q);
 				this.setState({
 					nowPlaying: {
-						name: data.trackName,
-						albumArt: data.albumArt,
+						name: data.song.trackName,
+						albumArt: data.song.albumArt,
 						queue: q
 					}
 				});
@@ -91,7 +94,7 @@ export class Player extends Component {
 					}
 				});
 			}
-		} catch(err) {
+		} catch (err) {
 			console.log(err);
 		}
 	};
@@ -118,7 +121,7 @@ export class Player extends Component {
 					albumArt: resp.tracks.items[0].album.images[0]
 				}
 			});
-		} catch(err) {
+		} catch (err) {
 			console.log(err);
 		}
 	};
@@ -145,7 +148,17 @@ export class Player extends Component {
 			});
 			console.log('Added to queue.');
 			this.getNowPlaying();
-		} catch(err) {
+		} catch (err) {
+			console.log(err);
+		}
+	};
+
+	playNext = async () => {
+		try {
+			let roomCode = sessionStorage.getItem('roomCode');
+			let resp = await Axios.post('/playNext', { roomCode });
+			console.log(resp);
+		} catch (err) {
 			console.log(err);
 		}
 	};
@@ -159,17 +172,14 @@ export class Player extends Component {
 				}
 			});
 			console.log(resp);
-		} catch(err) {
+		} catch (err) {
 			console.log(err);
 		}
 	};
 
 	handleSearch = async (e) => {
 		e.preventDefault();
-		this.setState(
-			{ searchValue: e.target.searchValue.value },
-			this.searchSong
-		);
+		this.setState({ searchValue: e.target.searchValue.value }, this.searchSong);
 	};
 
 	render() {
@@ -190,7 +200,9 @@ export class Player extends Component {
 		let queueListItems = (
 			<ul className='queue-list'>
 				{queue.map((song) => (
-					<li key={song.uri}>{song.trackName} - {song.artist}</li>
+					<li key={song.uri}>
+						{song.trackName} - {song.artist}
+					</li>
 				))}
 			</ul>
 		);
@@ -199,19 +211,15 @@ export class Player extends Component {
 			<div>
 				<div className='player-container'>
 					<h3>Now Playing</h3> <h3>{nowPlaying.name}</h3>
-					<img
-						className='album-art'
-						src={nowPlaying.albumArt}
-						alt='albumArt'
-					/>
+					<img className='album-art' src={nowPlaying.albumArt} alt='albumArt' />
 					<button className='control-btns' onClick={this.playPause}>
 						Play/Pause
 					</button>
+					<button className='control-btns' onClick={this.playNext}>
+						Next
+					</button>
 					<form onSubmit={this.handleSearch}>
-						<input
-							type='text'
-							placeholder='Search for a song...'
-							name='searchValue'></input>
+						<input type='text' placeholder='Search for a song...' name='searchValue' />
 						<button className='search-btn' type='submit'>
 							&rarr;
 						</button>

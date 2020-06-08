@@ -20,7 +20,6 @@ export class CreateRoom extends Component {
 			if (resp.status === 200) {
 				console.log(resp.data);
 				this.setState({ roomCode: resp.data.roomCode });
-
 			}
 		} catch (err) {
 			console.log(err);
@@ -46,11 +45,7 @@ export class CreateRoom extends Component {
 			<div>
 				<h2>Create Room</h2>
 				<form onSubmit={this.handleSubmit}>
-					<input
-						type='text'
-						name='roomName'
-						placeholder='Room Name'
-					/>
+					<input type='text' name='roomName' placeholder='Room Name' />
 					<button type='submit'>Submit</button>
 				</form>
 				{this.state.roomCode}
