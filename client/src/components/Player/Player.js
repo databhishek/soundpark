@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import cover from '../assets/cover.png';
+import cover from '../../assets/cover.png';
 import Axios from 'axios';
 import './Player.scss';
 import io from 'socket.io-client';
