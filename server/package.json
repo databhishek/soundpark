@@ -18,6 +18,7 @@
     "passport": "^0.4.1",
     "passport-spotify": "^1.1.0",
     "query-string": "^6.12.1",
+    "redis": "^3.0.2",
     "request": "^2.88.2",
     "socket.io": "^2.3.0"
   }
