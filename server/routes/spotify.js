@@ -92,9 +92,9 @@ module.exports = (io) => {
 					$push: { queue: song }
 				}
 			);
-			io.to(room).emit('add_to_queue', { id: req.user.profile.id });
 			let Q = await db.Room.find({ roomCode: room }, 'queue');
 			Q = Q[0].queue;
+			io.to(room).emit('add_to_queue', { id: req.user.profile.id, queue: Q });
 			let Q2 = Q;
 			Q = Q.map((song) => song.uri);
 			if (Q.length === 1) {

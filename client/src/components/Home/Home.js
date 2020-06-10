@@ -4,7 +4,20 @@ import { Link } from 'react-router-dom';
 import banner from '../../assets/banner.png';
 import './Home.scss';
 const baseURL = 'http://13.233.142.76/api';
+
+// Axios config
 Axios.defaults.baseURL = baseURL;
+Axios.interceptors.response.use(
+	(response) => {
+		return response;
+	},
+	(error) => {
+		if (error.response.status === 401) {
+			window.location.href = '/?loggedIn=false';
+		}
+		return error;
+	}
+);
 
 export class Home extends Component {
 	componentWillMount() {

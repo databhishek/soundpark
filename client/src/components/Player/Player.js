@@ -3,9 +3,23 @@ import cover from '../../assets/cover.png';
 import Axios from 'axios';
 import './Player.scss';
 import io from 'socket.io-client';
-Axios.defaults.baseURL = 'http://13.233.142.76/api';
+const baseURL = 'http://13.233.142.76/api';
+
+// Axios config
+Axios.defaults.baseURL = baseURL;
 Axios.defaults.headers['Content-Type'] = 'application/json';
 Axios.defaults.withCredentials = true;
+Axios.interceptors.response.use(
+	(response) => {
+		return response;
+	},
+	(error) => {
+		if (error.response.status === 401) {
+			window.location.href = '/?loggedIn=false';
+		}
+		return error;
+	}
+);
 
 export class Player extends Component {
 	constructor(props) {
@@ -13,8 +27,8 @@ export class Player extends Component {
 
 		this.state = {
 			nowPlaying: {
-				name: 'Queue is empty! Add something to get started.',
-				albumArt: cover
+				name: sessionStorage.getItem('currentSong') || 'Queue is empty!',
+				albumArt: sessionStorage.getItem('currentArt') || cover
 			},
 			searchValue: '',
 			searchResult: {
@@ -53,6 +67,8 @@ export class Player extends Component {
 				}
 				let q = this.state.queue.shift();
 				console.log('Remove song: ' + q);
+				sessionStorage.setItem('currentSong', data.song.trackName);
+				sessionStorage.setItem('currentArt', data.song.albumArt);
 				this.setState({
 					nowPlaying: {
 						name: data.song.trackName,
@@ -64,14 +80,15 @@ export class Player extends Component {
 		});
 		socket.on('add_to_queue', async (data) => {
 			console.log('Add to queue event.');
-			let resp = await Axios.post('/queueReturns', {
+			await Axios.post('/queueReturns', {
 				room: this.state.room,
 				id: data.id
 			});
-			console.log(resp);
+			this.setState({
+				queue: data.queue
+			});
 			this.getNowPlaying();
 		});
-		this.getNowPlaying();
 	}
 
 	getNowPlaying = async () => {
@@ -80,6 +97,8 @@ export class Player extends Component {
 			let resp = await Axios.get('/currentlyPlaying');
 			resp = resp.data;
 			if (resp.item) {
+				sessionStorage.setItem('currentSong', resp.item.name);
+				sessionStorage.setItem('currentArt', resp.item.album.images[0].url);
 				this.setState({
 					nowPlaying: {
 						name: resp.item.name,
@@ -90,7 +109,7 @@ export class Player extends Component {
 				this.setState({
 					nowPlaying: {
 						name: 'Nothing is playing!',
-						albumArt: ''
+						albumArt: cover
 					}
 				});
 			}

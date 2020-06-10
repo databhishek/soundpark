@@ -1,7 +1,21 @@
 import React, { Component } from 'react';
 import Axios from 'axios';
 import './CreateRoom.scss';
-Axios.defaults.baseURL = 'http://13.233.142.76/api';
+const baseURL = 'http://13.233.142.76/api';
+
+// Axios config
+Axios.defaults.baseURL = baseURL;
+Axios.interceptors.response.use(
+	(response) => {
+		return response;
+	},
+	(error) => {
+		if (error.response.status === 401) {
+			window.location.href = '/?loggedIn=false';
+		}
+		return error;
+	}
+);
 
 export class CreateRoom extends Component {
 	constructor(props) {
