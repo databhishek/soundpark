@@ -42,7 +42,7 @@ module.exports = (io) => {
 			let Q = await db.Room.find({ roomCode: room }, 'queue');
 			Q = Q[0].queue;
 			Q = Q.map((song) => song.uri);
-			if (req.user.profile.id === id) return res.send('You are the initial user who queued.').status(200);
+			if (req.user.id === id) return res.send('You are the initial user who queued.').status(200);
 			if (Q.length === 1) {
 				await axios.put(
 					'/me/player/play',
@@ -94,7 +94,7 @@ module.exports = (io) => {
 			);
 			let Q = await db.Room.find({ roomCode: room }, 'queue');
 			Q = Q[0].queue;
-			io.to(room).emit('add_to_queue', { id: req.user.profile.id, queue: Q });
+			io.to(room).emit('add_to_queue', { id: req.user.id, queue: Q });
 			let Q2 = Q;
 			Q = Q.map((song) => song.uri);
 			if (Q.length === 1) {
@@ -202,7 +202,7 @@ module.exports = (io) => {
 				await axios.post('/me/player/next', null, {
 					headers: { Authorization: 'Bearer ' + req.user.accessToken }
 				});
-				io.to(roomCode).emit('currently_playing', { song: Q[0], playedNext: true, id: req.user.profile.id });
+				io.to(roomCode).emit('currently_playing', { song: Q[0], playedNext: true, id: req.user.id });
 			}
 			let durationSum = 0;
 			for (i = 0; i < Q.length; i++) {
@@ -220,7 +220,7 @@ module.exports = (io) => {
 	exp.playNextReturns = async (req, res) => {
 		try {
 			let id = req.body.id;
-			if(req.user.profile.id === id) return res.send('You are the one who pressed next.').status(200);
+			if (req.user.id === id) return res.send('You are the one who pressed next.').status(200);
 			await axios.post('/me/player/next', null, {
 				headers: { Authorization: 'Bearer ' + req.user.accessToken }
 			});

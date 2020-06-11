@@ -5,7 +5,7 @@ mongoose.connect('mongodb://localhost/spotify', {
 	useUnifiedTopology: true,
 	useFindAndModify: false
 });
-
+checkNew: true
 mongoose.set('useCreateIndex', true);
 
 mongoose.connection.on('connected', () => {
@@ -23,9 +23,13 @@ mongoose.connection.on('disconnected', () => {
 let exp = {};
 
 const UserSchema = new mongoose.Schema({
-	spotifyID: { type: String, unique: true },
-	spotifyAccessToken: String,
-	spotifyRefreshToken: String
+	id: String,
+	username: String,
+	displayName: String,
+	profileUrl: String,
+	subscription: String,
+	accessToken: String,
+	refreshToken: String
 });
 
 const QueueSchema = new mongoose.Schema({

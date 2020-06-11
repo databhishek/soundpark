@@ -30,57 +30,48 @@ module.exports = (passport) => {
 		});
 	};
 
-	exp.refreshToken = (req, res) => {
+	exp.setupRefresh = async (req, res) => {
 		try {
 			// Set interval for refreshing token every hour with id as spotify id
-			userIntervals[req.user.profile.id] = setInterval(async () => {
-				console.log('Refreshing token for user: ' + req.user.profile.id);
+			userIntervals[req.user.id] = setInterval(async () => {
+				console.log('Refreshing token for user: ' + req.user.id);
 
+				// Grab refresh token from db
+				let refreshToken = await db.User.find({ id: req.user.id }, 'refreshToken');
+				refreshToken = refreshToken[0].refresh_token;
 				const reqBody = {
 					grant_type: 'refresh_token',
-					refresh_token: req.user.refreshToken
+					refresh_token: refreshToken
 				};
 
+				// Setup config for http request
+				const clientId = process.env.SPOTIFY_CLIENT_ID;
+				const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 				const config = {
 					headers: {
 						'Content-Type': 'application/x-www-form-urlencoded',
-						Authorization:
-							'Basic ' +
-							new Buffer.from(
-								process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET
-							).toString('base64')
+						Authorization: 'Basic ' + new Buffer.from(clientId + ':' + clientSecret).toString('base64')
 					}
 				};
 
 				let resp = await axios.post('https://accounts.spotify.com/api/token', qs.stringify(reqBody), config);
 
 				if (resp.status === 200) {
-					db.User.updateOne(
-						{ spotifyID: req.user.profile.id },
+					await db.User.updateOne(
+						{ id: req.user.id },
 						{
 							$set: {
-								spotifyAccessToken: resp.data.access_token
+								accessToken: resp.data.access_token
 							}
 						}
 					);
-					// Update session object
-					let userObj = {
-						profile: req.user.profile,
-						accessToken: resp.data.access_token,
-						refreshToken: req.user.refreshToken,
-						expiresIn: req.user.expiresIn
-					};
-					req.login(userObj, (err) => {
-						if (err) console.log(err);
-						console.log('New access token is: ' + req.user.accessToken);
-					});
-					req.session.save();
 				}
 			}, 3601000);
 
 			// Successful authentication, redirect home.
 			console.log('Successful login.');
-			res.redirect(					// Update session as well
+			res.redirect(
+				// Update session as well
 				process.env.MODE === 'PROD'
 					? process.env.SERVER_URI + '?loggedIn=true'
 					: 'http://localhost:3000/?loggedIn=true'

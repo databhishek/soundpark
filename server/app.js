@@ -22,7 +22,7 @@ app.use(
 	session({
 		secret: process.env.SESS,
 		resave: false,
-		saveUninitialized: true,
+		saveUninitialized: false,
 		cookie: { secure: false },
 		store: new redisStore({
 			host: 'localhost',
