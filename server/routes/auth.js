@@ -64,13 +64,13 @@ module.exports = (passport) => {
 						}
 					);
 					// Update session object
-					let userObj =  {
+					let userObj = {
 						profile: req.user.profile,
 						accessToken: resp.data.access_token,
-						refreshToken: req.user.refreshToken,
+						refreshToken: req.user.refreshToken
 					};
 					req.login(userObj, (err) => {
-						if(err) console.log(err);
+						if (err) console.log(err);
 					});
 				}
 			}, 3600000);
