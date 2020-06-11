@@ -64,6 +64,8 @@ module.exports = (passport) => {
 							}
 						}
 					);
+					// Update session object
+					req.user.accessToken = resp.data.access_token;
 				}
 			}, 3600000);
 
