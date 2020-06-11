@@ -5,7 +5,7 @@ mongoose.connect('mongodb://localhost/spotify', {
 	useUnifiedTopology: true,
 	useFindAndModify: false
 });
-checkNew: true
+
 mongoose.set('useCreateIndex', true);
 
 mongoose.connection.on('connected', () => {
