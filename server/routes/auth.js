@@ -55,7 +55,6 @@ module.exports = (passport) => {
 				let resp = await axios.post('https://accounts.spotify.com/api/token', qs.stringify(reqBody), config);
 
 				if (resp.status === 200) {
-					console.log('New access token: ' + resp.data.access_token);
 					db.User.updateOne(
 						{ spotifyID: req.user.profile.id },
 						{
@@ -65,7 +64,14 @@ module.exports = (passport) => {
 						}
 					);
 					// Update session object
-					req.user.accessToken = resp.data.access_token;
+					let userObj =  {
+						profile: req.user.profile,
+						accessToken: resp.data.access_token,
+						refreshToken: req.user.refreshToken,
+					};
+					req.login(userObj, (err) => {
+						if(err) console.log(err);
+					});
 				}
 			}, 3600000);
 
