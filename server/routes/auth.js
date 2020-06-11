@@ -67,13 +67,15 @@ module.exports = (passport) => {
 					let userObj = {
 						profile: req.user.profile,
 						accessToken: resp.data.access_token,
-						refreshToken: req.user.refreshToken
+						refreshToken: req.user.refreshToken,
+						expiresIn: req.user.expiresIn
 					};
 					req.login(userObj, (err) => {
 						if (err) console.log(err);
+						console.log('New access token is: ' + req.user.accessToken);
 					});
 				}
-			}, 3600000);
+			}, 3601000);
 
 			// Successful authentication, redirect home.
 			console.log('Successful login.');

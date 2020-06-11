@@ -35,7 +35,8 @@ module.exports = (passport) => {
 							return done(null, {
 								profile: profile,
 								accessToken: accessToken,
-								refreshToken: refreshToken
+								refreshToken: refreshToken,
+								expiresIn: expires_in
 							});
 					}
 				);
