@@ -74,12 +74,13 @@ module.exports = (passport) => {
 						if (err) console.log(err);
 						console.log('New access token is: ' + req.user.accessToken);
 					});
+					req.session.save();
 				}
 			}, 3601000);
 
 			// Successful authentication, redirect home.
 			console.log('Successful login.');
-			res.redirect(
+			res.redirect(					// Update session as well
 				process.env.MODE === 'PROD'
 					? process.env.SERVER_URI + '?loggedIn=true'
 					: 'http://localhost:3000/?loggedIn=true'
