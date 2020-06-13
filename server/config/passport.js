@@ -33,14 +33,15 @@ module.exports = (passport) => {
 						profileUrl: profile.profileUrl,
 						subscription: profile.product,
 						accessToken: accessToken,
-						refreshToken: refreshToken
+						refreshToken: refreshToken,
+						currentDevice: ''
 					},
 					{
 						upsert: true
 					},
-					(err) => {
+					(err, data) => {
 						if (err) console.log(err);
-						else return done(null, profile);
+						else return done(null, data);
 					}
 				);
 			}

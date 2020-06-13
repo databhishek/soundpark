@@ -48,6 +48,9 @@ module.exports = (io) => {
 					'/me/player/play',
 					{ uris: Q },
 					{
+						params: {
+							device_id: req.user.currentDevice
+						},
 						headers: {
 							Authorization: 'Bearer ' + req.user.accessToken
 						}
@@ -56,6 +59,7 @@ module.exports = (io) => {
 			} else {
 				await axios.post('/me/player/queue', null, {
 					params: {
+						device_id: req.user.currentDevice,
 						uri: Q[Q.length - 1]
 					},
 					headers: { Authorization: 'Bearer ' + req.user.accessToken }
@@ -70,6 +74,7 @@ module.exports = (io) => {
 
 	exp.addToQueue = async (req, res) => {
 		try {
+			console.log(req.user.currentDevice);
 			let songToAdd = req.body.track;
 			let room = req.body.roomCode;
 			let trackData = await axios.get('/tracks/' + songToAdd.id, {
@@ -102,6 +107,9 @@ module.exports = (io) => {
 					'/me/player/play',
 					{ uris: Q },
 					{
+						params: {
+							device_id: req.user.currentDevice
+						},
 						headers: { Authorization: 'Bearer ' + req.user.accessToken }
 					}
 				);
@@ -110,6 +118,7 @@ module.exports = (io) => {
 			} else {
 				await axios.post('/me/player/queue', null, {
 					params: {
+						device_id: req.user.currentDevice,
 						uri: Q[Q.length - 1]
 					},
 					headers: { Authorization: 'Bearer ' + req.user.accessToken }
@@ -143,6 +152,9 @@ module.exports = (io) => {
 						position_ms: new Date().getTime() - room[0].changedat
 					},
 					{
+						params: {
+							device_id: req.user.currentDevice
+						},
 						headers: { Authorization: 'Bearer ' + req.user.accessToken }
 					}
 				);
@@ -153,12 +165,17 @@ module.exports = (io) => {
 		}
 	};
 
-	exp.join = async (token, code) => {
+	exp.join = async (token, code, deviceID) => {
 		try {
+			await axios.put('/me/player/play', { uris: [] }, {
+				params: {
+					device_id: deviceID
+				},
+				headers: { Authorization: 'Bearer ' + token }
+			})
 			let room = await db.Room.find({ roomCode: code });
 			let Q = room[0].queue;
 			Q = Q.map((song) => song.uri);
-			console.log(Q);
 			let Q2 = [];
 			Q2[0] = Q[0];
 			if (Q.length > 0) {
@@ -169,19 +186,21 @@ module.exports = (io) => {
 						position_ms: new Date().getTime() - room[0].changedat
 					},
 					{
+						params: {
+							device_id: deviceID
+						},
 						headers: { Authorization: 'Bearer ' + token }
 					}
 				);
-			}
-			console.log(Q);
-			Q.shift();
-			for (i = 0; i < Q.length; i++) {
-				await axios.post('/me/player/queue', null, {
-					params: {
-						uri: Q[i]
-					},
-					headers: { Authorization: 'Bearer ' + token }
-				});
+				Q.shift();
+				for (i = 0; i < Q.length; i++) {
+					await axios.post('/me/player/queue', null, {
+						params: {
+							uri: Q[i]
+						},
+						headers: { Authorization: 'Bearer ' + token }
+					});
+				}
 			}
 		} catch (err) {
 			console.log(err);
@@ -200,6 +219,7 @@ module.exports = (io) => {
 			Q.shift(); // Mongo returns queue before the update
 			if (Q.length > 0) {
 				await axios.post('/me/player/next', null, {
+					params: { device_id: req.user.currentDevice },
 					headers: { Authorization: 'Bearer ' + req.user.accessToken }
 				});
 				io.to(roomCode).emit('currently_playing', { song: Q[0], playedNext: true, id: req.user.id });
@@ -222,6 +242,7 @@ module.exports = (io) => {
 			let id = req.body.id;
 			if (req.user.id === id) return res.send('You are the one who pressed next.').status(200);
 			await axios.post('/me/player/next', null, {
+				params: { device_id: req.user.currentDevice },
 				headers: { Authorization: 'Bearer ' + req.user.accessToken }
 			});
 			return res.send('Success.').status(200);
@@ -230,6 +251,35 @@ module.exports = (io) => {
 			return res.send(err);
 		}
 	};
+
+	exp.getDevices = async (req, res) => {
+		try {
+			let resp = await axios.get('/me/player/devices', {
+				headers: { Authorization: 'Bearer ' + req.user.accessToken }
+			});
+			resp = resp.data.devices;
+			resp.forEach((ele, idx, arr) => {
+				if(ele.is_restricted)
+					arr.splice(idx, 1);
+			});
+			return res.send(resp).status(200);
+		} catch (err) {
+			console.log(err);
+			return res.send(err);
+		}
+	}
+
+	exp.setDevice = async (req, res) => {
+		try {
+			await db.User.findOneAndUpdate({ id: req.user.id }, { $set: 
+				{ currentDevice: req.body.deviceID }
+			})
+			return res.send('Device selected: ' + req.user.currentDevice).status(200);
+		} catch (err) {
+			console.log(err);
+			return res.send(err);
+		}
+	}
 
 	return exp;
 };

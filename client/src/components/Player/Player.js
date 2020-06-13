@@ -3,8 +3,13 @@ import cover from '../../assets/cover.png';
 import Axios from 'axios';
 import './Player.scss';
 import io from 'socket.io-client';
+import { Link } from 'react-router-dom/cjs/react-router-dom.min';
 const baseURL = 'http://13.233.142.76/api';
-
+const socket = io('http://13.233.142.76', {
+	secure: true,
+	rejectUnauthorized: true,
+	path: '/rooms/socket.io'
+});
 // Axios config
 Axios.defaults.baseURL = baseURL;
 Axios.defaults.headers['Content-Type'] = 'application/json';
@@ -41,23 +46,26 @@ export class Player extends Component {
 				albumArt: ''
 			},
 			room: sessionStorage.getItem('roomCode'),
-			queue: []
+			queue: [],
+			users: []
 		};
 	}
 
 	componentDidMount() {
-		const socket = io('http://13.233.142.76', {
-			secure: true,
-			rejectUnauthorized: true,
-			path: '/rooms/socket.io'
-		});
 		socket.on('joined_room', (data) => {
 			if (data !== null) {
 				this.setState({
-					queue: data
+					queue: data.queue,
+					users: data.users
 				});
 			}
 		});
+		socket.on('left_room', (data) => {
+			this.setState({
+				queue: [],
+				users: data
+			})
+		})
 		socket.emit('join_room', this.state.room);
 		socket.on('currently_playing', async (data) => {
 			console.log('Song change event.');
@@ -90,6 +98,13 @@ export class Player extends Component {
 			this.getNowPlaying();
 		});
 	}
+
+	// componentWillUnmount() {
+	// 	window.addEventListener('beforeunload', e => {
+	// 		e.preventDefault();
+	// 		this.leaveRoom();
+	// 	})
+	// }
 
 	getNowPlaying = async () => {
 		try {
@@ -196,6 +211,18 @@ export class Player extends Component {
 		}
 	};
 
+	leaveRoom = async () => {
+		try {
+			await Axios.get('/leaveRoom', {
+				params: { roomCode: sessionStorage.getItem('roomCode')}
+			})
+			socket.emit('leave_room', this.state.room);
+			sessionStorage.removeItem('roomCode');
+		} catch (err) {
+			console.log(err);
+		}
+	}
+
 	handleSearch = async (e) => {
 		e.preventDefault();
 		this.setState({ searchValue: e.target.searchValue.value }, this.searchSong);
@@ -203,7 +230,7 @@ export class Player extends Component {
 
 	render() {
 		const { searchedYet, name, album, artist } = this.state.searchResult;
-		const { nowPlaying, queue } = this.state;
+		const { nowPlaying, queue, users } = this.state;
 		let result;
 		if (searchedYet) {
 			result = (
@@ -221,6 +248,16 @@ export class Player extends Component {
 				{queue.map((song) => (
 					<li key={song.uri}>
 						{song.trackName} - {song.artist}
+					</li>
+				))}
+			</ul>
+		);
+
+		let usersListItems = (
+			<ul className='users-list'>
+				{users.map((u) => (
+					<li key={u}>
+						{u}
 					</li>
 				))}
 			</ul>
@@ -245,9 +282,18 @@ export class Player extends Component {
 					</form>
 					{result}
 				</div>
+				<Link to='/'>
+					<button className='control-btns' onClick={this.leaveRoom}>
+						LEAVE
+					</button>
+				</Link>
 				<div className='queue-container'>
 					<h2> QUEUE </h2>
 					{queueListItems}
+				</div>
+				<div className='users-container'>
+					<h2> MEMBERS </h2>
+					{usersListItems}
 				</div>
 			</div>
 		);

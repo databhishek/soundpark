@@ -63,3 +63,20 @@ $green : #1DB954;
         padding: 0; 
     }
 }
+
+.users-container {
+    display: block;
+    margin: auto;
+    margin-top: 1em;
+    overflow: auto;
+    width: 30em;
+    height: 20em;
+    border: 3px solid white;
+    border-radius: 5px;
+    box-shadow: 5px 5px 10px 1px darkgrey;
+
+    .users-list {
+        list-style: none;
+        padding: 0; 
+    }
+}

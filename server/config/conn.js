@@ -29,7 +29,8 @@ const UserSchema = new mongoose.Schema({
 	profileUrl: String,
 	subscription: String,
 	accessToken: String,
-	refreshToken: String
+	refreshToken: String,
+	currentDevice: String
 });
 
 const QueueSchema = new mongoose.Schema({
@@ -44,7 +45,8 @@ const QueueSchema = new mongoose.Schema({
 const RoomSchema = new mongoose.Schema({
 	roomName: String,
 	roomCode: String,
-	queue: [ QueueSchema ],
+	queue: [QueueSchema],
+	users: [String],
 	changedat: Number
 });
 

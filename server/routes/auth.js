@@ -26,7 +26,7 @@ module.exports = (passport) => {
 			failureRedirect:
 				process.env.MODE === 'PROD'
 					? process.env.SERVER_URI + '?loggedIn=false'
-					: 'http://localhost:3000/?loggedIn=false'
+					: 'http://13.233.142.76/?loggedIn=false'
 		});
 	};
 
@@ -74,7 +74,7 @@ module.exports = (passport) => {
 				// Update session as well
 				process.env.MODE === 'PROD'
 					? process.env.SERVER_URI + '?loggedIn=true'
-					: 'http://localhost:3000/?loggedIn=true'
+					: 'http://13.233.142.76/?loggedIn=true'
 			);
 		} catch (e) {
 			console.log(e);

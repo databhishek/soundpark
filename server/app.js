@@ -12,7 +12,15 @@ const db = require('./config/conn');
 const redis = require('redis');
 const redisClient = redis.createClient();
 const redisStore = require('connect-redis')(session);
+const cors = require('cors');
 require('dotenv').config();
+// const corsOptions = {
+// 	origin: 'http://localhost:3000',
+// 	optionsSuccessStatus: 200,
+// 	credentials: true // some legacy browsers (IE11, various SmartTVs) choke on 204
+// };
+
+// app.use(cors(corsOptions));
 
 redisClient.on('error', (err) => {
 	console.log('Redis error: ', err);
@@ -53,11 +61,14 @@ io.on('connection', (socket) => {
 			if (roomCode === null) {
 				console.log('No room yet.');
 			} else {
-				console.log('Joined room: ' + roomCode);
-				db.Room.find({ roomCode: roomCode }, 'queue', (err, data) => {
+				db.Room.find({ roomCode: roomCode }, 'queue users', (err, data) => {
 					if (err) console.log(err);
 					else {
-						io.to(roomCode).emit('joined_room', data[0].queue);
+						console.log('Joined room: ' + roomCode);
+						io.to(roomCode).emit('joined_room', {
+							queue: data[0].queue,
+							users: data[0].users
+						});
 					}
 				});
 			}
@@ -67,7 +78,13 @@ io.on('connection', (socket) => {
 	// Leave Room
 	socket.on('leave_room', (roomCode) => {
 		socket.leave(roomCode);
-		console.log('Left room: ' + roomCode);
+		db.Room.find({roomCode: roomCode}, 'users', (err, data) => {
+			if(err) console.log(err);
+			else {
+				console.log('Left room: ' + roomCode);
+				io.to(roomCode).emit('left_room', data[0].users);
+			}
+		})
 	});
 
 	// Socket Disconnected
