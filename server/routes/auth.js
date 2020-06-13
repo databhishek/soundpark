@@ -36,12 +36,9 @@ module.exports = (passport) => {
 			userIntervals[req.user.id] = setInterval(async () => {
 				console.log('Refreshing token for user: ' + req.user.id);
 
-				// Grab refresh token from db
-				let refreshToken = await db.User.find({ id: req.user.id }, 'refreshToken');
-				refreshToken = refreshToken[0].refresh_token;
 				const reqBody = {
 					grant_type: 'refresh_token',
-					refresh_token: refreshToken
+					refresh_token: req.user.refreshToken
 				};
 
 				// Setup config for http request
@@ -71,7 +68,6 @@ module.exports = (passport) => {
 			// Successful authentication, redirect home.
 			console.log('Successful login.');
 			res.redirect(
-				// Update session as well
 				process.env.MODE === 'PROD'
 					? process.env.SERVER_URI + '?loggedIn=true'
 					: 'http://13.233.142.76/?loggedIn=true'

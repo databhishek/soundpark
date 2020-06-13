@@ -12,7 +12,7 @@ module.exports = (io) => {
 			let resp = await axios.get('/me/player/currently-playing', {
 				headers: { Authorization: 'Bearer ' + req.user.accessToken }
 			});
-			return res.send(resp.data).status(200);
+			return res.status(200).send(resp.data);
 		} catch (e) {
 			console.log(e);
 			return res.send(e);
@@ -28,7 +28,7 @@ module.exports = (io) => {
 				},
 				headers: { Authorization: 'Bearer ' + req.user.accessToken }
 			});
-			return res.send(resp.data).status(200);
+			return res.status(200).send(resp.data);
 		} catch (e) {
 			console.log(e);
 			return res.send(e);
@@ -42,7 +42,7 @@ module.exports = (io) => {
 			let Q = await db.Room.find({ roomCode: room }, 'queue');
 			Q = Q[0].queue;
 			Q = Q.map((song) => song.uri);
-			if (req.user.id === id) return res.send('You are the initial user who queued.').status(200);
+			if (req.user.id === id) return res.status(200).send('You are the initial user who queued.');
 			if (Q.length === 1) {
 				await axios.put(
 					'/me/player/play',
@@ -65,7 +65,7 @@ module.exports = (io) => {
 					headers: { Authorization: 'Bearer ' + req.user.accessToken }
 				});
 			}
-			return res.send('Success.').status(200);
+			return res.status(200).send('Success.');
 		} catch (e) {
 			console.log(e);
 			return res.send(e);
@@ -125,7 +125,7 @@ module.exports = (io) => {
 				});
 				timer.setTimer(room, currSong.data.progress_ms);
 			}
-			return res.send(Q2).status(200);
+			return res.status(200).send(Q2);
 		} catch (e) {
 			return res.send(e);
 		}
@@ -167,12 +167,16 @@ module.exports = (io) => {
 
 	exp.join = async (token, code, deviceID) => {
 		try {
-			await axios.put('/me/player/play', { uris: [] }, {
-				params: {
-					device_id: deviceID
-				},
-				headers: { Authorization: 'Bearer ' + token }
-			})
+			await axios.put(
+				'/me/player/play',
+				{ uris: [] },
+				{
+					params: {
+						device_id: deviceID
+					},
+					headers: { Authorization: 'Bearer ' + token }
+				}
+			);
 			let room = await db.Room.find({ roomCode: code });
 			let Q = room[0].queue;
 			Q = Q.map((song) => song.uri);
@@ -240,12 +244,12 @@ module.exports = (io) => {
 	exp.playNextReturns = async (req, res) => {
 		try {
 			let id = req.body.id;
-			if (req.user.id === id) return res.send('You are the one who pressed next.').status(200);
+			if (req.user.id === id) return res.status(200).send('You are the one who pressed next.');
 			await axios.post('/me/player/next', null, {
 				params: { device_id: req.user.currentDevice },
 				headers: { Authorization: 'Bearer ' + req.user.accessToken }
 			});
-			return res.send('Success.').status(200);
+			return res.status(200).send('Success.');
 		} catch (err) {
 			console.log(err);
 			return res.send(err);
@@ -259,27 +263,29 @@ module.exports = (io) => {
 			});
 			resp = resp.data.devices;
 			resp.forEach((ele, idx, arr) => {
-				if(ele.is_restricted)
-					arr.splice(idx, 1);
+				if (ele.is_restricted) arr.splice(idx, 1);
 			});
-			return res.send(resp).status(200);
+			return res.status(200).send(resp);
 		} catch (err) {
 			console.log(err);
 			return res.send(err);
 		}
-	}
+	};
 
 	exp.setDevice = async (req, res) => {
 		try {
-			await db.User.findOneAndUpdate({ id: req.user.id }, { $set: 
-				{ currentDevice: req.body.deviceID }
-			})
-			return res.send('Device selected: ' + req.user.currentDevice).status(200);
+			await db.User.findOneAndUpdate(
+				{ id: req.user.id },
+				{
+					$set: { currentDevice: req.body.deviceID }
+				}
+			);
+			return res.status(200).send('Device selected: ' + req.user.currentDevice);
 		} catch (err) {
 			console.log(err);
 			return res.send(err);
 		}
-	}
+	};
 
 	return exp;
 };

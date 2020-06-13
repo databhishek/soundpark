@@ -78,13 +78,13 @@ io.on('connection', (socket) => {
 	// Leave Room
 	socket.on('leave_room', (roomCode) => {
 		socket.leave(roomCode);
-		db.Room.find({roomCode: roomCode}, 'users', (err, data) => {
-			if(err) console.log(err);
+		db.Room.find({ roomCode: roomCode }, 'users', (err, data) => {
+			if (err) console.log(err);
 			else {
 				console.log('Left room: ' + roomCode);
 				io.to(roomCode).emit('left_room', data[0].users);
 			}
-		})
+		});
 	});
 
 	// Socket Disconnected

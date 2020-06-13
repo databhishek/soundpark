@@ -45,8 +45,8 @@ const QueueSchema = new mongoose.Schema({
 const RoomSchema = new mongoose.Schema({
 	roomName: String,
 	roomCode: String,
-	queue: [QueueSchema],
-	users: [String],
+	queue: [ QueueSchema ],
+	users: [ String ],
 	changedat: Number
 });
 

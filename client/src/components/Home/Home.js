@@ -10,7 +10,7 @@ Axios.defaults.baseURL = baseURL;
 Axios.interceptors.response.use(
 	(response) => {
 		return response;
-	},	
+	},
 	(error) => {
 		if (error.response.status === 401) {
 			window.location.href = '/?loggedIn=false';
@@ -26,6 +26,7 @@ export class Home extends Component {
 			deviceID: ''
 		};
 	}
+
 	componentWillMount() {
 		let loggedIn = new URLSearchParams(this.props.location.search).get('loggedIn');
 		if (loggedIn === 'true') {
@@ -38,26 +39,24 @@ export class Home extends Component {
 	}
 
 	getDevices = async () => {
-		try{
+		try {
 			let resp = await Axios.get('/getDevices');
-			resp = resp.data
-			if(resp.length){
+			resp = resp.data;
+			if (resp.length) {
 				this.setState({ deviceID: resp[0].id });
-			}
-			else
-				console.log('Please open Spotify on a device');
+			} else console.log('Please open Spotify on a device');
 		} catch (err) {
 			console.log(err);
 		}
-	}
+	};
 
 	setDevice = async () => {
-		try{
+		try {
 			await Axios.post('/setDevice', { deviceID: this.state.deviceID });
 		} catch (err) {
 			console.log(err);
 		}
-	}
+	};
 
 	handleSubmit = async (e) => {
 		try {
@@ -96,7 +95,7 @@ export class Home extends Component {
 					</a>
 				</div>
 			);
-			this.setDevice();
+		this.setDevice();
 		return (
 			<div className='home-container'>
 				<img className='banner' src={banner} alt='banner' />

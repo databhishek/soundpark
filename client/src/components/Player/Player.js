@@ -5,11 +5,14 @@ import './Player.scss';
 import io from 'socket.io-client';
 import { Link } from 'react-router-dom/cjs/react-router-dom.min';
 const baseURL = 'http://13.233.142.76/api';
+
+// Socket config
 const socket = io('http://13.233.142.76', {
 	secure: true,
 	rejectUnauthorized: true,
 	path: '/rooms/socket.io'
 });
+
 // Axios config
 Axios.defaults.baseURL = baseURL;
 Axios.defaults.headers['Content-Type'] = 'application/json';
@@ -64,8 +67,8 @@ export class Player extends Component {
 			this.setState({
 				queue: [],
 				users: data
-			})
-		})
+			});
+		});
 		socket.emit('join_room', this.state.room);
 		socket.on('currently_playing', async (data) => {
 			console.log('Song change event.');
@@ -214,14 +217,14 @@ export class Player extends Component {
 	leaveRoom = async () => {
 		try {
 			await Axios.get('/leaveRoom', {
-				params: { roomCode: sessionStorage.getItem('roomCode')}
-			})
+				params: { roomCode: sessionStorage.getItem('roomCode') }
+			});
 			socket.emit('leave_room', this.state.room);
 			sessionStorage.removeItem('roomCode');
 		} catch (err) {
 			console.log(err);
 		}
-	}
+	};
 
 	handleSearch = async (e) => {
 		e.preventDefault();
@@ -253,15 +256,7 @@ export class Player extends Component {
 			</ul>
 		);
 
-		let usersListItems = (
-			<ul className='users-list'>
-				{users.map((u) => (
-					<li key={u}>
-						{u}
-					</li>
-				))}
-			</ul>
-		);
+		let usersListItems = <ul className='users-list'>{users.map((u) => <li key={u}>{u}</li>)}</ul>;
 
 		return (
 			<div>
