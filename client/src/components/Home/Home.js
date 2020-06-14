@@ -4,15 +4,63 @@ import { Link } from 'react-router-dom';
 import banner from '../../assets/banner.png';
 import './Home.scss';
 const baseURL = 'http://13.233.142.76/api';
+
+// Axios config
 Axios.defaults.baseURL = baseURL;
+Axios.interceptors.response.use(
+	(response) => {
+		return response;
+	},
+	(error) => {
+		if (error.response.status === 401) {
+			window.location.href = '/?loggedIn=false';
+		}
+		return error;
+	}
+);
 
 export class Home extends Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			deviceID: ''
+		};
+	}
+
 	componentWillMount() {
 		let loggedIn = new URLSearchParams(this.props.location.search).get('loggedIn');
 		if (loggedIn === 'true') {
 			localStorage.setItem('loggedIn', 'true');
 		}
 	}
+
+	componentDidMount() {
+		if(localStorage.getItem('loggedIn') === 'true'){
+			this.getDevices();
+		}
+	}
+
+	getDevices = async () => {
+		try {
+			let resp = await Axios.get('/getDevices');
+			resp = resp.data;
+			if (resp.length > 0) {
+				this.setState({ deviceID: resp[0].id });
+				console.log(this.state.deviceID);
+			} else window.alert('Please open Spotify on a device');
+		} catch (err) {
+			console.log(err);
+		}
+	};
+
+	setDevice = async () => {
+		try {
+			console.log(this.state.deviceID);
+			await Axios.post('/setDevice', { deviceID: this.state.deviceID });
+		} catch (err) {
+			console.log(err);
+		}
+	};
 
 	handleSubmit = async (e) => {
 		try {
@@ -51,6 +99,8 @@ export class Home extends Component {
 					</a>
 				</div>
 			);
+		if(this.state.deviceID)
+			this.setDevice();
 		return (
 			<div className='home-container'>
 				<img className='banner' src={banner} alt='banner' />

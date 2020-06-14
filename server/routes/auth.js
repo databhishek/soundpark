@@ -26,53 +26,51 @@ module.exports = (passport) => {
 			failureRedirect:
 				process.env.MODE === 'PROD'
 					? process.env.SERVER_URI + '?loggedIn=false'
-					: 'http://localhost:3000/?loggedIn=false'
+					: 'http://13.233.142.76/?loggedIn=false'
 		});
 	};
 
-	exp.refreshToken = (req, res) => {
+	exp.setupRefresh = async (req, res) => {
 		try {
 			// Set interval for refreshing token every hour with id as spotify id
-			userIntervals[req.user.profile.id] = setInterval(async () => {
-				console.log('Refreshing token for user: ' + req.user.profile.id);
+			userIntervals[req.user.id] = setInterval(async () => {
+				console.log('Refreshing token for user: ' + req.user.id);
 
 				const reqBody = {
 					grant_type: 'refresh_token',
 					refresh_token: req.user.refreshToken
 				};
 
+				// Setup config for http request
+				const clientId = process.env.SPOTIFY_CLIENT_ID;
+				const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 				const config = {
 					headers: {
 						'Content-Type': 'application/x-www-form-urlencoded',
-						Authorization:
-							'Basic ' +
-							new Buffer.from(
-								process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET
-							).toString('base64')
+						Authorization: 'Basic ' + new Buffer.from(clientId + ':' + clientSecret).toString('base64')
 					}
 				};
 
 				let resp = await axios.post('https://accounts.spotify.com/api/token', qs.stringify(reqBody), config);
 
 				if (resp.status === 200) {
-					console.log('New access token: ' + resp.data.access_token);
-					db.User.updateOne(
-						{ spotifyID: req.user.profile.id },
+					await db.User.updateOne(
+						{ id: req.user.id },
 						{
 							$set: {
-								spotifyAccessToken: resp.data.access_token
+								accessToken: resp.data.access_token
 							}
 						}
 					);
 				}
-			}, 3600000);
+			}, 3601000);
 
 			// Successful authentication, redirect home.
 			console.log('Successful login.');
 			res.redirect(
 				process.env.MODE === 'PROD'
 					? process.env.SERVER_URI + '?loggedIn=true'
-					: 'http://localhost:3000/?loggedIn=true'
+					: 'http://13.233.142.76/?loggedIn=true'
 			);
 		} catch (e) {
 			console.log(e);

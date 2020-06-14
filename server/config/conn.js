@@ -23,9 +23,14 @@ mongoose.connection.on('disconnected', () => {
 let exp = {};
 
 const UserSchema = new mongoose.Schema({
-	spotifyID: { type: String, unique: true },
-	spotifyAccessToken: String,
-	spotifyRefreshToken: String
+	id: String,
+	username: String,
+	displayName: String,
+	profileUrl: String,
+	subscription: String,
+	accessToken: String,
+	refreshToken: String,
+	currentDevice: String
 });
 
 const QueueSchema = new mongoose.Schema({
@@ -41,6 +46,7 @@ const RoomSchema = new mongoose.Schema({
 	roomName: String,
 	roomCode: String,
 	queue: [ QueueSchema ],
+	users: [ String ],
 	changedat: Number
 });
 
