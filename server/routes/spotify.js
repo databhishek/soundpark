@@ -42,14 +42,18 @@ module.exports = (io) => {
 			console.log(Q);
 			let Q2 = [];
 			Q2[0] = Q[0].queue[0].uri;
-			let resp = await axios.put('/me/player/play', { uris: Q2 }, {
-				params: {
-					device_id: req.user.currentDevice
-				},
-				headers: {
-					Authorization: 'Bearer ' + req.user.accessToken
+			let resp = await axios.put(
+				'/me/player/play',
+				{ uris: Q2 },
+				{
+					params: {
+						device_id: req.user.currentDevice
+					},
+					headers: {
+						Authorization: 'Bearer ' + req.user.accessToken
+					}
 				}
-			});
+			);
 			console.log(resp);
 			return res.status(200).send('Success.');
 		} catch (e) {
@@ -133,15 +137,6 @@ module.exports = (io) => {
 
 	exp.join = async (token, code, deviceID) => {
 		try {
-			await axios.put(
-				'/me/player/pause',
-				{
-					params: {
-						device_id: deviceID
-					},
-					headers: { Authorization: 'Bearer ' + token }
-				}
-			);
 			let room = await db.Room.find({ roomCode: code });
 			let Q = room[0].queue;
 			Q = Q.map((song) => song.uri);
@@ -158,18 +153,11 @@ module.exports = (io) => {
 						params: {
 							device_id: deviceID
 						},
-						headers: { Authorization: 'Bearer ' + token }
+						headers: {
+							Authorization: 'Bearer ' + token
+						}
 					}
 				);
-				Q.shift();
-				for (i = 0; i < Q.length; i++) {
-					await axios.post('/me/player/queue', null, {
-						params: {
-							uri: Q[i]
-						},
-						headers: { Authorization: 'Bearer ' + token }
-					});
-				}
 			}
 		} catch (err) {
 			console.log(err);

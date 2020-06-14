@@ -35,12 +35,17 @@ module.exports = (io) => {
 	exp.joinRoom = async (req, res) => {
 		try {
 			let room = await db.Room.find({ roomCode: req.query.roomCode });
-			if (!room) return res.send('Invalid room code').status(400);
+			if (!room) return res.send('Invalid room code.');
 			console.log('Joining room: ' + req.user.displayName);
 			await db.Room.findOneAndUpdate(
-				{ roomCode: req.query.roomCode },
+				{ roomCode: req.query.roomCode, 'users.id': { $ne: req.user.id } },
 				{
-					$push: { users: req.user.displayName }
+					$push: {
+						users: {
+							id: req.user.id,
+							name: req.user.displayName
+						}
+					}
 				}
 			);
 			spotify.join(req.user.accessToken, req.query.roomCode, req.user.currentDevice);
@@ -55,7 +60,12 @@ module.exports = (io) => {
 			await db.Room.findOneAndUpdate(
 				{ roomCode: req.query.roomCode },
 				{
-					$pull: { users: req.user.displayName }
+					$pull: {
+						users: {
+							id: req.user.id,
+							name: req.user.displayName
+						}
+					}
 				}
 			);
 			return res.status(200).send('Left room: ' + req.user.displayName);

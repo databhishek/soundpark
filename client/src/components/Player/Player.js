@@ -1,17 +1,13 @@
 import React, { Component } from 'react';
-import cover from '../../assets/cover.png';
+import { Link } from 'react-router-dom';
 import Axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import cover from '../../assets/cover.png';
+import SocketContext from '../../Socket';
 import './Player.scss';
-import io from 'socket.io-client';
-import { Link } from 'react-router-dom/cjs/react-router-dom.min';
-const baseURL = 'http://13.233.142.76/api';
 
-// Socket config
-const socket = io('http://13.233.142.76', {
-	secure: true,
-	rejectUnauthorized: true,
-	path: '/rooms/socket.io'
-});
+const baseURL = 'http://13.233.142.76/api';
 
 // Axios config
 Axios.defaults.baseURL = baseURL;
@@ -29,7 +25,7 @@ Axios.interceptors.response.use(
 	}
 );
 
-export class Player extends Component {
+class Player extends Component {
 	constructor(props) {
 		super(props);
 
@@ -58,12 +54,11 @@ export class Player extends Component {
 	}
 
 	componentDidMount() {
-		if(!this.state.room.code) {
-			window.location.href = '/';
-			window.alert('Please join a room');
+		if (!this.state.room.code) {
+			window.location.href = '/?joinRoom=false';
 		}
-		socket.emit('join_room', this.state.room.code);
-		socket.on('joined_room', (data) => {
+		this.props.socket.emit('join_room', this.state.room.code);
+		this.props.socket.on('joined_room', (data) => {
 			if (data.queue.length) {
 				this.setState({
 					nowPlaying: {
@@ -71,26 +66,32 @@ export class Player extends Component {
 						albumArt: data.queue[0].albumArt
 					},
 					queue: data.queue,
+					room: {
+						name: data.roomName,
+						code: sessionStorage.getItem('roomCode')
+					},
+					users: data.users
+				});
+			} else {
+				this.setState({
+					room: {
+						name: data.roomName,
+						code: sessionStorage.getItem('roomCode')
+					},
+					users: data.users
 				});
 			}
-			this.setState({
-				room: {
-					name: data.roomName,
-					code: sessionStorage.getItem('roomCode')
-				},
-				users: data.users
-			})
 		});
-		socket.on('left_room', (data) => {
+		this.props.socket.on('left_room', (data) => {
 			this.setState({
 				users: data
 			});
 		});
-		socket.on('currently_playing', async (data) => {
+		this.props.socket.on('currently_playing', async (data) => {
 			console.log('Song change event.');
-			if (data) { 
+			if (data) {
 				await Axios.post('/queueReturns', { room: this.state.room.code });
-				(this.state.queue).shift();
+				this.state.queue.shift();
 				let q = this.state.queue;
 				this.setState({
 					nowPlaying: {
@@ -99,35 +100,36 @@ export class Player extends Component {
 					},
 					queue: q
 				});
-			} else this.setState({
-				nowPlaying: {
-					name: 'Queue is empty!',
-					albumArt: cover
-				},
-				queue: []
-			})
+			} else
+				this.setState({
+					nowPlaying: {
+						name: 'Queue is empty!',
+						albumArt: cover
+					},
+					queue: []
+				});
 		});
-		socket.on('added_to_queue', async (data) => {
+		this.props.socket.on('added_to_queue', async (data) => {
 			console.log('Add to queue event.');
-			if(data.length === 1){
+			if (data.length === 1) {
 				await Axios.post('/queueReturns', { room: this.state.room.code });
 				this.setState({
 					nowPlaying: {
 						name: data[0].trackName,
 						albumArt: data[0].albumArt
 					}
-				})
+				});
 			}
 			this.setState({
 				queue: data
 			});
 		});
-		window.addEventListener('beforeunload', e => {
-			e.preventDefault();
-			window.alert('Unloading');
-			console.log('Unloading');
-			this.leaveRoom();
-		})
+		// window.addEventListener('beforeunload', function(e){
+		// 	var confirmationMessage = 'o/';
+
+		// 	(e || window.event).returnValue = confirmationMessage; //Gecko + IE
+		// 	return confirmationMessage; //Webkit, Safari, Chrome
+		// });
 	}
 
 	getNowPlaying = async () => {
@@ -240,7 +242,7 @@ export class Player extends Component {
 				params: { roomCode: this.state.room.code }
 			});
 			await sessionStorage.removeItem('roomCode');
-			socket.emit('leave_room', this.state.room.code);
+			this.props.socket.emit('leave_room', this.state.room.code);
 		} catch (err) {
 			console.log(err);
 		}
@@ -276,7 +278,7 @@ export class Player extends Component {
 			</ul>
 		);
 
-		let usersListItems = <ul className='users-list'>{users.map((u) => <li key={u}>{u}</li>)}</ul>;
+		let usersListItems = <ul className='users-list'>{users.map((u) => <li key={u.id}>{u.name}</li>)}</ul>;
 
 		return (
 			<div>
@@ -311,9 +313,14 @@ export class Player extends Component {
 					<h2> MEMBERS </h2>
 					{usersListItems}
 				</div>
+				<ToastContainer />
 			</div>
 		);
 	}
 }
 
-export default Player;
+const PlayerwithSocket = (props) => (
+	<SocketContext.Consumer>{(socket) => <Player {...props} socket={socket} />}</SocketContext.Consumer>
+);
+
+export default PlayerwithSocket;

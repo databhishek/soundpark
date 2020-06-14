@@ -1,8 +1,12 @@
 import React, { Component } from 'react';
-import Axios from 'axios';
 import { Link } from 'react-router-dom';
+import Axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import SocketContext from '../../Socket';
 import banner from '../../assets/banner.png';
 import './Home.scss';
+
 const baseURL = 'http://13.233.142.76/api';
 
 // Axios config
@@ -19,24 +23,29 @@ Axios.interceptors.response.use(
 	}
 );
 
-export class Home extends Component {
-	constructor(props) {
-		super(props);
-		this.state = {
-			deviceID: ''
-		};
-	}
-
-	componentWillMount() {
+class Home extends Component {
+	UNSAFE_componentWillMount() {
 		let loggedIn = new URLSearchParams(this.props.location.search).get('loggedIn');
 		if (loggedIn === 'true') {
 			localStorage.setItem('loggedIn', 'true');
 		}
+		if (loggedIn === 'false') {
+			localStorage.setItem('loggedIn', 'false');
+		}
 	}
 
 	componentDidMount() {
-		if(localStorage.getItem('loggedIn') === 'true'){
-			this.getDevices();
+		let joinRoom = new URLSearchParams(this.props.location.search).get('joinRoom');
+		if (joinRoom === 'false') {
+			window.history.replaceState({}, document.title, '/');
+			toast.dark('Please join a room first.', {
+				position: 'top-right',
+				autoClose: 3000,
+				hideProgressBar: true,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true
+			});
 		}
 	}
 
@@ -45,9 +54,9 @@ export class Home extends Component {
 			let resp = await Axios.get('/getDevices');
 			resp = resp.data;
 			if (resp.length > 0) {
-				this.setState({ deviceID: resp[0].id });
-				console.log(this.state.deviceID);
-			} else window.alert('Please open Spotify on a device');
+				sessionStorage.setItem('deviceID', resp[0].id);
+				console.log(resp[0].id);
+			}
 		} catch (err) {
 			console.log(err);
 		}
@@ -55,8 +64,7 @@ export class Home extends Component {
 
 	setDevice = async () => {
 		try {
-			console.log(this.state.deviceID);
-			await Axios.post('/setDevice', { deviceID: this.state.deviceID });
+			await Axios.post('/setDevice', { deviceID: sessionStorage.getItem('deviceID') });
 		} catch (err) {
 			console.log(err);
 		}
@@ -65,16 +73,32 @@ export class Home extends Component {
 	handleSubmit = async (e) => {
 		try {
 			e.preventDefault();
+			let roomCode = e.target.roomCode.value;
 			if (localStorage.getItem('loggedIn') === 'true') {
-				let roomCode = e.target.roomCode.value;
-				sessionStorage.setItem('roomCode', roomCode);
-				await Axios.get('/joinRoom', {
-					params: { roomCode: roomCode }
-				});
-				console.log('Joined room ' + roomCode);
-				window.location.href = '/player';
+				await this.getDevices();
+				if (!sessionStorage.getItem('deviceID')) {
+					toast.dark('Please open Spotify first.', {
+						toastId: 'noSpotify',
+						position: 'top-right',
+						autoClose: 3000,
+						hideProgressBar: true,
+						closeOnClick: true,
+						pauseOnHover: true,
+						draggable: true,
+						limit: 1
+					});
+				} else {
+					await this.setDevice();
+					console.log('This ran?');
+					sessionStorage.setItem('roomCode', roomCode);
+					await Axios.get('/joinRoom', {
+						params: { roomCode: roomCode }
+					});
+					console.log('Joined room ' + roomCode);
+					window.location.href = '/player';
+				}
 			} else {
-				console.log('Not logged in.');
+				window.location.href = '/?loggedIn=false';
 			}
 		} catch (err) {
 			console.log(err);
@@ -99,8 +123,6 @@ export class Home extends Component {
 					</a>
 				</div>
 			);
-		if(this.state.deviceID)
-			this.setDevice();
 		return (
 			<div className='home-container'>
 				<img className='banner' src={banner} alt='banner' />
@@ -111,9 +133,14 @@ export class Home extends Component {
 					</button>
 				</form>
 				{Btns}
+				<ToastContainer />
 			</div>
 		);
 	}
 }
 
-export default Home;
+const HomewithSocket = (props) => (
+	<SocketContext.Consumer>{(socket) => <Home {...props} socket={socket} />}</SocketContext.Consumer>
+);
+
+export default HomewithSocket;
