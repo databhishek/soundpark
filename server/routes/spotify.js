@@ -38,33 +38,19 @@ module.exports = (io) => {
 	exp.queueReturns = async (req, res) => {
 		try {
 			let room = req.body.room;
-			let id = req.body.id;
-			let Q = await db.Room.find({ roomCode: room }, 'queue');
-			Q = Q[0].queue;
-			Q = Q.map((song) => song.uri);
-			if (req.user.id === id) return res.status(200).send('You are the initial user who queued.');
-			if (Q.length === 1) {
-				await axios.put(
-					'/me/player/play',
-					{ uris: Q },
-					{
-						params: {
-							device_id: req.user.currentDevice
-						},
-						headers: {
-							Authorization: 'Bearer ' + req.user.accessToken
-						}
-					}
-				);
-			} else {
-				await axios.post('/me/player/queue', null, {
-					params: {
-						device_id: req.user.currentDevice,
-						uri: Q[Q.length - 1]
-					},
-					headers: { Authorization: 'Bearer ' + req.user.accessToken }
-				});
-			}
+			let Q = await db.Room.find({ roomCode: room });
+			console.log(Q);
+			let Q2 = [];
+			Q2[0] = Q[0].queue[0].uri;
+			let resp = await axios.put('/me/player/play', { uris: Q2 }, {
+				params: {
+					device_id: req.user.currentDevice
+				},
+				headers: {
+					Authorization: 'Bearer ' + req.user.accessToken
+				}
+			});
+			console.log(resp);
 			return res.status(200).send('Success.');
 		} catch (e) {
 			console.log(e);
@@ -74,7 +60,6 @@ module.exports = (io) => {
 
 	exp.addToQueue = async (req, res) => {
 		try {
-			console.log(req.user.currentDevice);
 			let songToAdd = req.body.track;
 			let room = req.body.roomCode;
 			let trackData = await axios.get('/tracks/' + songToAdd.id, {
@@ -99,32 +84,13 @@ module.exports = (io) => {
 			);
 			let Q = await db.Room.find({ roomCode: room }, 'queue');
 			Q = Q[0].queue;
-			io.to(room).emit('add_to_queue', { id: req.user.id, queue: Q });
+			io.to(room).emit('added_to_queue', Q);
 			let Q2 = Q;
 			Q = Q.map((song) => song.uri);
 			if (Q.length === 1) {
-				await axios.put(
-					'/me/player/play',
-					{ uris: Q },
-					{
-						params: {
-							device_id: req.user.currentDevice
-						},
-						headers: { Authorization: 'Bearer ' + req.user.accessToken }
-					}
-				);
 				await db.Room.updateOne({ roomCode: room }, { $set: { changedat: new Date().getTime() } });
 				timer.setTimer(room, 0);
-			} else {
-				await axios.post('/me/player/queue', null, {
-					params: {
-						device_id: req.user.currentDevice,
-						uri: Q[Q.length - 1]
-					},
-					headers: { Authorization: 'Bearer ' + req.user.accessToken }
-				});
-				timer.setTimer(room, currSong.data.progress_ms);
-			}
+			} else timer.setTimer(room, currSong.data.progress_ms);
 			return res.status(200).send(Q2);
 		} catch (e) {
 			return res.send(e);
@@ -168,8 +134,7 @@ module.exports = (io) => {
 	exp.join = async (token, code, deviceID) => {
 		try {
 			await axios.put(
-				'/me/player/play',
-				{ uris: [] },
+				'/me/player/pause',
 				{
 					params: {
 						device_id: deviceID
@@ -222,11 +187,7 @@ module.exports = (io) => {
 			let Q = room.queue;
 			Q.shift(); // Mongo returns queue before the update
 			if (Q.length > 0) {
-				await axios.post('/me/player/next', null, {
-					params: { device_id: req.user.currentDevice },
-					headers: { Authorization: 'Bearer ' + req.user.accessToken }
-				});
-				io.to(roomCode).emit('currently_playing', { song: Q[0], playedNext: true, id: req.user.id });
+				io.to(roomCode).emit('currently_playing', Q[0]);
 			}
 			let durationSum = 0;
 			for (i = 0; i < Q.length; i++) {
@@ -280,7 +241,8 @@ module.exports = (io) => {
 					$set: { currentDevice: req.body.deviceID }
 				}
 			);
-			return res.status(200).send('Device selected: ' + req.user.currentDevice);
+			console.log('Device selected: ' + req.body.deviceID);
+			return res.status(200).send('Device selected: ' + req.body.deviceID);
 		} catch (err) {
 			console.log(err);
 			return res.send(err);

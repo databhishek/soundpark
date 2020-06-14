@@ -12,8 +12,9 @@ const db = require('./config/conn');
 const redis = require('redis');
 const redisClient = redis.createClient();
 const redisStore = require('connect-redis')(session);
-const cors = require('cors');
 require('dotenv').config();
+
+// const cors = require('cors');
 // const corsOptions = {
 // 	origin: 'http://localhost:3000',
 // 	optionsSuccessStatus: 200,
@@ -61,11 +62,12 @@ io.on('connection', (socket) => {
 			if (roomCode === null) {
 				console.log('No room yet.');
 			} else {
-				db.Room.find({ roomCode: roomCode }, 'queue users', (err, data) => {
+				db.Room.find({ roomCode: roomCode }, null, (err, data) => {
 					if (err) console.log(err);
 					else {
 						console.log('Joined room: ' + roomCode);
 						io.to(roomCode).emit('joined_room', {
+							roomName: data[0].roomName,
 							queue: data[0].queue,
 							users: data[0].users
 						});

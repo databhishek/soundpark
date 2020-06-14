@@ -21,7 +21,7 @@ module.exports = (io) => {
 						{ roomCode: roomCode },
 						{ $pop: { queue: -1 }, $set: { changedat: new Date().getTime() } }
 					);
-					io.to(roomCode).emit('currently_playing', { song: room.queue[1], playedNext: false });
+					io.to(roomCode).emit('currently_playing', room.queue[1]);
 					console.log(room);
 				}, timerVal)
 			);
@@ -49,7 +49,7 @@ module.exports = (io) => {
 						{ roomCode: roomCode },
 						{ $pop: { queue: -1 }, $set: { changedat: new Date().getTime() } }
 					);
-					io.to(roomCode).emit('currently_playing', { song: room.queue[1], playedNext: false });
+					io.to(roomCode).emit('currently_playing', room.queue[1]);
 					console.log(room);
 				}, duration)
 			);

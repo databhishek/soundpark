@@ -35,16 +35,19 @@ export class Home extends Component {
 	}
 
 	componentDidMount() {
-		this.getDevices();
+		if(localStorage.getItem('loggedIn') === 'true'){
+			this.getDevices();
+		}
 	}
 
 	getDevices = async () => {
 		try {
 			let resp = await Axios.get('/getDevices');
 			resp = resp.data;
-			if (resp.length) {
+			if (resp.length > 0) {
 				this.setState({ deviceID: resp[0].id });
-			} else console.log('Please open Spotify on a device');
+				console.log(this.state.deviceID);
+			} else window.alert('Please open Spotify on a device');
 		} catch (err) {
 			console.log(err);
 		}
@@ -52,6 +55,7 @@ export class Home extends Component {
 
 	setDevice = async () => {
 		try {
+			console.log(this.state.deviceID);
 			await Axios.post('/setDevice', { deviceID: this.state.deviceID });
 		} catch (err) {
 			console.log(err);
@@ -95,7 +99,8 @@ export class Home extends Component {
 					</a>
 				</div>
 			);
-		this.setDevice();
+		if(this.state.deviceID)
+			this.setDevice();
 		return (
 			<div className='home-container'>
 				<img className='banner' src={banner} alt='banner' />

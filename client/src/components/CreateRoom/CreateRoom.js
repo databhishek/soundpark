@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Axios from 'axios';
 import './CreateRoom.scss';
-const baseURL = 'http://13.233.142.76/api';
+const baseURL = 'http://13.233.142.76/api;
 
 // Axios config
 Axios.defaults.baseURL = baseURL;

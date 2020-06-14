@@ -35,8 +35,8 @@ export class Player extends Component {
 
 		this.state = {
 			nowPlaying: {
-				name: sessionStorage.getItem('currentSong') || 'Queue is empty!',
-				albumArt: sessionStorage.getItem('currentArt') || cover
+				name: 'Queue is empty!',
+				albumArt: cover
 			},
 			searchValue: '',
 			searchResult: {
@@ -48,66 +48,87 @@ export class Player extends Component {
 				uri: '',
 				albumArt: ''
 			},
-			room: sessionStorage.getItem('roomCode'),
+			room: {
+				name: '',
+				code: sessionStorage.getItem('roomCode')
+			},
 			queue: [],
 			users: []
 		};
 	}
 
 	componentDidMount() {
+		if(!this.state.room.code) {
+			window.location.href = '/';
+			window.alert('Please join a room');
+		}
+		socket.emit('join_room', this.state.room.code);
 		socket.on('joined_room', (data) => {
-			if (data !== null) {
+			if (data.queue.length) {
 				this.setState({
+					nowPlaying: {
+						name: data.queue[0].trackName,
+						albumArt: data.queue[0].albumArt
+					},
 					queue: data.queue,
-					users: data.users
 				});
 			}
+			this.setState({
+				room: {
+					name: data.roomName,
+					code: sessionStorage.getItem('roomCode')
+				},
+				users: data.users
+			})
 		});
 		socket.on('left_room', (data) => {
 			this.setState({
-				queue: [],
 				users: data
 			});
 		});
-		socket.emit('join_room', this.state.room);
 		socket.on('currently_playing', async (data) => {
 			console.log('Song change event.');
-			if (data.song !== null) {
-				if (data.playedNext === true) {
-					await Axios.post('/playNextReturns', { id: data.id });
-				}
-				let q = this.state.queue.shift();
-				console.log('Remove song: ' + q);
-				sessionStorage.setItem('currentSong', data.song.trackName);
-				sessionStorage.setItem('currentArt', data.song.albumArt);
+			if (data) { 
+				await Axios.post('/queueReturns', { room: this.state.room.code });
+				(this.state.queue).shift();
+				let q = this.state.queue;
 				this.setState({
 					nowPlaying: {
-						name: data.song.trackName,
-						albumArt: data.song.albumArt,
-						queue: q
-					}
+						name: data.trackName,
+						albumArt: data.albumArt
+					},
+					queue: q
 				});
-			}
+			} else this.setState({
+				nowPlaying: {
+					name: 'Queue is empty!',
+					albumArt: cover
+				},
+				queue: []
+			})
 		});
-		socket.on('add_to_queue', async (data) => {
+		socket.on('added_to_queue', async (data) => {
 			console.log('Add to queue event.');
-			await Axios.post('/queueReturns', {
-				room: this.state.room,
-				id: data.id
-			});
+			if(data.length === 1){
+				await Axios.post('/queueReturns', { room: this.state.room.code });
+				this.setState({
+					nowPlaying: {
+						name: data[0].trackName,
+						albumArt: data[0].albumArt
+					}
+				})
+			}
 			this.setState({
-				queue: data.queue
+				queue: data
 			});
-			this.getNowPlaying();
 		});
+		window.addEventListener('beforeunload', e => {
+			e.preventDefault();
+			window.alert('Unloading');
+			console.log('Unloading');
+			this.leaveRoom();
+		})
 	}
-
-	// componentWillUnmount() {
-	// 	window.addEventListener('beforeunload', e => {
-	// 		e.preventDefault();
-	// 		this.leaveRoom();
-	// 	})
-	// }
 
 	getNowPlaying = async () => {
 		try {
@@ -184,7 +205,6 @@ export class Player extends Component {
 				queue: resp.data
 			});
 			console.log('Added to queue.');
-			this.getNowPlaying();
 		} catch (err) {
 			console.log(err);
 		}
@@ -217,10 +237,10 @@ export class Player extends Component {
 	leaveRoom = async () => {
 		try {
 			await Axios.get('/leaveRoom', {
-				params: { roomCode: sessionStorage.getItem('roomCode') }
+				params: { roomCode: this.state.room.code }
 			});
-			socket.emit('leave_room', this.state.room);
-			sessionStorage.removeItem('roomCode');
+			await sessionStorage.removeItem('roomCode');
+			socket.emit('leave_room', this.state.room.code);
 		} catch (err) {
 			console.log(err);
 		}
@@ -233,7 +253,7 @@ export class Player extends Component {
 
 	render() {
 		const { searchedYet, name, album, artist } = this.state.searchResult;
-		const { nowPlaying, queue, users } = this.state;
+		const { nowPlaying, queue, users, room } = this.state;
 		let result;
 		if (searchedYet) {
 			result = (
@@ -261,6 +281,7 @@ export class Player extends Component {
 		return (
 			<div>
 				<div className='player-container'>
+					<h1>{room.name}</h1>
 					<h3>Now Playing</h3> <h3>{nowPlaying.name}</h3>
 					<img className='album-art' src={nowPlaying.albumArt} alt='albumArt' />
 					<button className='control-btns' onClick={this.playPause}>
