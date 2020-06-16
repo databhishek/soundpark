@@ -68,7 +68,7 @@ button {
 		flex-direction: row;
 		.fa {
 			color: white;
-
+			padding: 5px;
 			&:hover {
 				transform: scale(1.2);
 			}
@@ -105,6 +105,10 @@ button {
 		max-height: 25vh;
 		overflow-y: scroll;
 		scrollbar-width: none;
+		&::-webkit-scrollbar {
+			display: none;
+		}
+		-ms-overflow-style: none;
 		list-style: none;
 		background: $bg2;
 
@@ -136,7 +140,7 @@ button {
 		border: none;
 		border-radius: 2px;
 		padding: 5px 5px;
-		opacity: 0.75;
+		opacity: 0.9;
 	}
 }
 
@@ -147,6 +151,10 @@ button {
 	height: 50vh;
 	overflow: scroll;
 	scrollbar-width: none;
+	&::-webkit-scrollbar {
+		display: none;
+	}
+	-ms-overflow-style: none;
 	padding: 5px 5px;
 	border-radius: 5px;
 	opacity: 0.95;

@@ -32,6 +32,7 @@ module.exports = (io) => {
 
 	exp.clearTimers = async (roomCode) => {
 		try {
+			if (!timerArr[roomCode]) timerArr[roomCode] = [];
 			for (i = 0; i < timerArr[roomCode].length; i++) {
 				clearTimeout(timerArr[roomCode][i]);
 			}
