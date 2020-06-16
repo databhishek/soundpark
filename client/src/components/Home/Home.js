@@ -28,9 +28,11 @@ class Home extends Component {
 		let loggedIn = new URLSearchParams(this.props.location.search).get('loggedIn');
 		if (loggedIn === 'true') {
 			localStorage.setItem('loggedIn', 'true');
+			window.history.replaceState({}, document.title, '/');
 		}
 		if (loggedIn === 'false') {
 			localStorage.setItem('loggedIn', 'false');
+			window.history.replaceState({}, document.title, '/');
 		}
 	}
 
@@ -38,10 +40,10 @@ class Home extends Component {
 		let joinRoom = new URLSearchParams(this.props.location.search).get('joinRoom');
 		if (joinRoom === 'false') {
 			window.history.replaceState({}, document.title, '/');
-			toast.dark('Please join a room first.', {
-				position: 'top-right',
+			toast.error('Please join a room first.', {
+				position: 'top-center',
 				autoClose: 3000,
-				hideProgressBar: true,
+				hideProgressBar: false,
 				closeOnClick: true,
 				pauseOnHover: true,
 				draggable: true
@@ -77,11 +79,10 @@ class Home extends Component {
 			if (localStorage.getItem('loggedIn') === 'true') {
 				await this.getDevices();
 				if (!sessionStorage.getItem('deviceID')) {
-					toast.dark('Please open Spotify first.', {
+					toast.error('Please open Spotify first.', {
 						toastId: 'noSpotify',
-						position: 'top-right',
+						position: 'top-center',
 						autoClose: 3000,
-						hideProgressBar: true,
 						closeOnClick: true,
 						pauseOnHover: true,
 						draggable: true,
@@ -108,31 +109,33 @@ class Home extends Component {
 	render() {
 		let Btns =
 			localStorage.getItem('loggedIn') === 'true' ? (
-				<div>
+				<div className='nav'>
 					<Link to='/createRoom'>
-						<button className='skewBtn blue'>Create</button>
+						<button className='skewBtn green'>Create</button>
 					</Link>
 					<Link to='/player'>
-						<button className='skewBtn blue'>Player</button>
+						<button className='skewBtn green'>Player</button>
 					</Link>
 				</div>
 			) : (
-				<div>
+				<div className='nav'>
 					<a href={baseURL + '/auth/spotify'}>
 						<button className='skewBtn green'>Login</button>
 					</a>
 				</div>
 			);
 		return (
-			<div className='home-container'>
-				<img className='banner' src={banner} alt='banner' />
-				<form onSubmit={this.handleSubmit}>
-					<input className='inp' type='text' placeholder='Enter room to join.' name='roomCode' />
-					<button className='submit-btn' type='submit'>
-						&rarr;
-					</button>
-				</form>
-				{Btns}
+			<div>
+				<div className='home-container'>
+					<img className='banner' src={banner} alt='banner' />
+					<form className='room-form' onSubmit={this.handleSubmit}>
+						<input type='text' placeholder='Enter room to join.' name='roomCode' />
+						<button className='submit-btn' type='submit'>
+							&rarr;
+						</button>
+					</form>
+					{Btns}
+				</div>
 				<ToastContainer />
 			</div>
 		);

@@ -2,6 +2,9 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import Axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
+import Popup from 'reactjs-popup';
+import { faForward, faPause, faSync } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import 'react-toastify/dist/ReactToastify.css';
 import cover from '../../assets/cover.png';
 import SocketContext from '../../Socket';
@@ -31,21 +34,15 @@ class Player extends Component {
 
 		this.state = {
 			nowPlaying: {
-				name: 'Queue is empty!',
+				name: 'Nothing playing.',
+				artist: 'N/A',
 				albumArt: cover
 			},
 			searchValue: '',
-			searchResult: {
-				searchedYet: false,
-				id: '',
-				name: '',
-				artist: '',
-				album: '',
-				uri: '',
-				albumArt: ''
-			},
+			searchedYet: false,
+			searchResult: [],
 			room: {
-				name: '',
+				name: 'No Room',
 				code: sessionStorage.getItem('roomCode')
 			},
 			queue: [],
@@ -63,6 +60,7 @@ class Player extends Component {
 				this.setState({
 					nowPlaying: {
 						name: data.queue[0].trackName,
+						artist: data.queue[0].artist,
 						albumArt: data.queue[0].albumArt
 					},
 					queue: data.queue,
@@ -96,6 +94,7 @@ class Player extends Component {
 				this.setState({
 					nowPlaying: {
 						name: data.trackName,
+						artist: data.artist,
 						albumArt: data.albumArt
 					},
 					queue: q
@@ -103,7 +102,8 @@ class Player extends Component {
 			} else
 				this.setState({
 					nowPlaying: {
-						name: 'Queue is empty!',
+						name: 'Nothing playing.',
+						artist: 'N/A',
 						albumArt: cover
 					},
 					queue: []
@@ -116,6 +116,7 @@ class Player extends Component {
 				this.setState({
 					nowPlaying: {
 						name: data[0].trackName,
+						artist: data[0].artist,
 						albumArt: data[0].albumArt
 					}
 				});
@@ -139,17 +140,20 @@ class Player extends Component {
 			resp = resp.data;
 			if (resp.item) {
 				sessionStorage.setItem('currentSong', resp.item.name);
+				sessionStorage.setItem('currentArtist', resp.item.artists[0].external_urls.name);
 				sessionStorage.setItem('currentArt', resp.item.album.images[0].url);
 				this.setState({
 					nowPlaying: {
 						name: resp.item.name,
+						artist: resp.item.artists[0].external_urls.name,
 						albumArt: resp.item.album.images[0].url
 					}
 				});
 			} else {
 				this.setState({
 					nowPlaying: {
-						name: 'Nothing is playing!',
+						name: 'Nothing playing.',
+						artist: 'N/A',
 						albumArt: cover
 					}
 				});
@@ -169,44 +173,48 @@ class Player extends Component {
 				}
 			});
 			resp = resp.data;
-			console.log(resp);
+			let search = [];
+			for (let i = 0; i < 10 && i < resp.tracks.items.length; i++) {
+				search.push({
+					id: resp.tracks.items[i].id,
+					name: resp.tracks.items[i].name,
+					album: resp.tracks.items[i].album.name,
+					artist: resp.tracks.items[i].artists[0].name,
+					uri: resp.tracks.items[i].uri,
+					albumArt: resp.tracks.items[i].album.images[0]
+				});
+			}
+			console.log(search);
 			this.setState({
-				searchResult: {
-					searchedYet: true,
-					id: resp.tracks.items[0].id,
-					name: resp.tracks.items[0].name,
-					album: resp.tracks.items[0].album.name,
-					artist: resp.tracks.items[0].artists[0].name,
-					uri: resp.tracks.items[0].uri,
-					albumArt: resp.tracks.items[0].album.images[0]
-				}
+				searchedYet: true,
+				searchResult: search
 			});
 		} catch (err) {
 			console.log(err);
 		}
 	};
 
-	addToQueue = async () => {
+	addToQueue = async (song) => {
 		try {
-			const searchResult = this.state.searchResult;
-			let track = {
-				id: searchResult.id,
-				name: searchResult.name,
-				artist: searchResult.artist,
-				album: searchResult.album,
-				uri: searchResult.uri,
-				albumArt: searchResult.albumArt
-			};
 			let roomCode = sessionStorage.getItem('roomCode');
 			let resp = await Axios.post('/addToQueue', {
 				roomCode,
-				track
+				song
 			});
 			console.log(resp.data);
 			this.setState({
 				queue: resp.data
 			});
 			console.log('Added to queue.');
+			toast.success('Succesfully added to queue.', {
+				toastId: 'toQueue',
+				position: 'top-center',
+				autoClose: 3000,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+				limit: 1
+			});
 		} catch (err) {
 			console.log(err);
 		}
@@ -254,17 +262,21 @@ class Player extends Component {
 	};
 
 	render() {
-		const { searchedYet, name, album, artist } = this.state.searchResult;
-		const { nowPlaying, queue, users, room } = this.state;
-		let result;
+		let search = this.state.searchResult;
+		const { nowPlaying, queue, users, room, searchedYet } = this.state;
+		let resultList;
 		if (searchedYet) {
-			result = (
-				<div className='search-res'>
-					<p>Song: {name}</p>
-					<p>Artist: {artist}</p>
-					<p>Album: {album}</p>
-					<button onClick={this.addToQueue}>Add</button>
-				</div>
+			resultList = (
+				<ul className='search-res'>
+					{search.map((song) => (
+						<li key={song.id} onClick={() => this.addToQueue(song)}>
+							<p className='title'>{song.name}</p>
+							<p className='artist'>
+								{song.album} - {song.artist}
+							</p>
+						</li>
+					))}
+				</ul>
 			);
 		}
 
@@ -272,7 +284,8 @@ class Player extends Component {
 			<ul className='queue-list'>
 				{queue.map((song) => (
 					<li key={song.uri}>
-						{song.trackName} - {song.artist}
+						<p className='track-title'>{song.trackName}</p>
+						<p className='track-artist'>{song.artist}</p>
 					</li>
 				))}
 			</ul>
@@ -282,38 +295,43 @@ class Player extends Component {
 
 		return (
 			<div>
-				<div className='player-container'>
-					<h1>{room.name}</h1>
-					<h3>Now Playing</h3> <h3>{nowPlaying.name}</h3>
-					<img className='album-art' src={nowPlaying.albumArt} alt='albumArt' />
-					<button className='control-btns' onClick={this.playPause}>
-						Play/Pause
-					</button>
-					<button className='control-btns' onClick={this.playNext}>
-						Next
-					</button>
-					<form onSubmit={this.handleSearch}>
-						<input type='text' placeholder='Search for a song...' name='searchValue' />
-						<button className='search-btn' type='submit'>
-							&rarr;
-						</button>
-					</form>
-					{result}
-				</div>
-				<Link to='/'>
-					<button className='control-btns' onClick={this.leaveRoom}>
-						LEAVE
-					</button>
-				</Link>
-				<div className='queue-container'>
-					<h2> QUEUE </h2>
-					{queueListItems}
-				</div>
-				<div className='users-container'>
-					<h2> MEMBERS </h2>
-					{usersListItems}
-				</div>
 				<ToastContainer />
+				<div className='container'>
+					<div className='player-container'>
+						<div className='room'>{room.name}</div>
+						<img className='album-art' src={nowPlaying.albumArt} alt='albumArt' />
+						<div className='title'>{nowPlaying.name}</div>
+						<div className='artist'>{nowPlaying.artist}</div>
+						<div className='controls'>
+							<button onClick={this.playPause}>
+								<FontAwesomeIcon icon={faPause} className='fa' size='2x' />
+							</button>
+							<button onClick={this.playPause}>
+								<FontAwesomeIcon icon={faSync} className='fa' size='2x' />
+							</button>
+							<button onClick={this.playNext}>
+								<FontAwesomeIcon icon={faForward} className='fa' size='2x' />
+							</button>
+						</div>
+						{/* <Link to='/'>
+						<button className='controls' onClick={this.leaveRoom}>
+							LEAVE
+						</button>
+					</Link> */}
+					</div>
+					<div className='queue-container'>
+						<div className='up-next'>
+							<div className='title'>Up Next</div>
+							<Popup modal closeOnDocumentClick trigger={<button className='add'>+</button>}>
+								<form className='search-form' autocomplete='off' onSubmit={this.handleSearch}>
+									<input type='text' placeholder='Search for a song...' name='searchValue' />
+								</form>
+								{resultList}
+							</Popup>
+						</div>
+						{queueListItems}
+					</div>
+				</div>
 			</div>
 		);
 	}

@@ -64,7 +64,7 @@ module.exports = (io) => {
 
 	exp.addToQueue = async (req, res) => {
 		try {
-			let songToAdd = req.body.track;
+			let songToAdd = req.body.song;
 			let room = req.body.roomCode;
 			let trackData = await axios.get('/tracks/' + songToAdd.id, {
 				headers: { Authorization: 'Bearer ' + req.user.accessToken }

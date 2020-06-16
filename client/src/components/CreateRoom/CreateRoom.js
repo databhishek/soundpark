@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import Axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './CreateRoom.scss';
 
 const baseURL = 'http://13.233.142.76/api';
@@ -35,9 +37,15 @@ export class CreateRoom extends Component {
 			console.log(resp.status);
 			if (resp.status === 200) {
 				console.log(resp.data);
-				this.setState({ roomCode: resp.data.roomCode }, () => {
-					let pop = document.getElementById('roomPopup');
-					pop.classList.toggle('show');
+				this.setState({ roomCode: resp.data });
+				toast.success('Room Code: ' + resp.data, {
+					toastId: 'createRoom',
+					position: 'top-center',
+					autoClose: false,
+					closeOnClick: false,
+					pauseOnHover: true,
+					draggable: false,
+					limit: 1
 				});
 			}
 		} catch (err) {
@@ -62,14 +70,14 @@ export class CreateRoom extends Component {
 	render() {
 		return (
 			<div>
-				<h2>Create Room</h2>
-				<form className='popup' onSubmit={this.handleSubmit}>
-					<input type='text' name='roomName' placeholder='Room Name' />
-					<button type='submit'>Submit</button>
-					<span className='popuptext' id='roomPopup'>
-						{this.state.roomCode}
-					</span>
-				</form>
+				<ToastContainer />
+				<div className='createRoom-container'>
+					<h2 className='page-title'>Create Room</h2>
+					<form className='create-form' onSubmit={this.handleSubmit}>
+						<input type='text' name='roomName' placeholder='Room Name' />
+						<button type='submit'>&rarr;</button>
+					</form>
+				</div>
 			</div>
 		);
 	}
