@@ -123,13 +123,6 @@ class Home extends Component {
 		try {
 			let roomName = this.state.roomName;
 			if (localStorage.getItem('loggedIn') === 'true') {
-				let resp = await Axios.post('/createRoom', { roomName });
-				if (resp.status === 200) {
-					console.log(resp.data);
-					this.setState({ roomCode: resp.data });
-					sessionStorage.setItem('roomCode', this.state.roomCode);
-					this.props.socket.emit('join_room', this.state.roomCode);
-				}
 				await this.getDevices();
 				if (!sessionStorage.getItem('deviceID')) {
 					toast.error('Please open Spotify first.', {
@@ -142,6 +135,13 @@ class Home extends Component {
 						limit: 1
 					});
 				} else {
+					let resp = await Axios.post('/createRoom', { roomName });
+					if (resp.status === 200) {
+						console.log(resp.data);
+						this.setState({ roomCode: resp.data });
+						sessionStorage.setItem('roomCode', this.state.roomCode);
+						this.props.socket.emit('join_room', this.state.roomCode);
+					}
 					await this.setDevice();
 					await Axios.get('/joinRoom', {
 						params: { roomCode: this.state.roomCode }
