@@ -49,6 +49,10 @@ class Home extends Component {
 				draggable: true
 			});
 		}
+
+		if (sessionStorage.getItem('roomCode')) {
+			this.props.socket.emit('join_room', sessionStorage.getItem('roomCode'));
+		}
 	}
 
 	getDevices = async () => {

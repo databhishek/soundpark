@@ -36,7 +36,7 @@ button {
 
 	.room {
 		font-size: 28px;
-		text-shadow: 1px 1px 10px #fff, 1px 1px 10px #ccc;
+		text-shadow: 1px 1px 7px #fff, 1px 1px 7px #ccc;
 		margin-bottom: 5px;
 	}
 
@@ -50,7 +50,9 @@ button {
 	.title {
 		font-size: 24px;
 		padding: 12px;
-		// overflow-x: hidden;
+		// width: 40%;
+		// white-space: nowrap;
+		overflow-x: hidden;
 		scrollbar-width: none;
 	}
 
@@ -114,11 +116,15 @@ button {
 
 		.track-title {
 			font-size: 18px;
+			// white-space: nowrap;
+			overflow-x: hidden;
+			margin-left: -1em;
 		}
 
 		.track-artist {
 			color: $secondaryText;
 			margin-top: -1em;
+			margin-left: -1.05em;
 		}
 	}
 }
@@ -148,14 +154,14 @@ button {
 	list-style: none;
 	background: $bg2;
 	width: 100%;
-	height: 50vh;
+	max-height: 50vh;
 	overflow: scroll;
 	scrollbar-width: none;
 	&::-webkit-scrollbar {
 		display: none;
 	}
 	-ms-overflow-style: none;
-	padding: 5px 5px;
+	padding: 0 5px;
 	border-radius: 5px;
 	opacity: 0.95;
 

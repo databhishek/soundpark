@@ -139,9 +139,9 @@ class Player extends Component {
 			let resp = await Axios.get('/currentlyPlaying');
 			resp = resp.data;
 			if (resp.item) {
-				sessionStorage.setItem('currentSong', resp.item.name);
-				sessionStorage.setItem('currentArtist', resp.item.artists[0].external_urls.name);
-				sessionStorage.setItem('currentArt', resp.item.album.images[0].url);
+				// sessionStorage.setItem('currentSong', resp.item.name);
+				// sessionStorage.setItem('currentArtist', resp.item.artists[0].external_urls.name);
+				// sessionStorage.setItem('currentArt', resp.item.album.images[0].url);
 				this.setState({
 					nowPlaying: {
 						name: resp.item.name,
@@ -203,13 +203,15 @@ class Player extends Component {
 			});
 			console.log(resp.data);
 			this.setState({
+				searchedYet: false,
+				searchResult: [],
 				queue: resp.data
 			});
 			console.log('Added to queue.');
 			toast.success('Succesfully added to queue.', {
 				toastId: 'toQueue',
 				position: 'top-center',
-				autoClose: 3000,
+				autoClose: 2000,
 				closeOnClick: true,
 				pauseOnHover: true,
 				draggable: true,
@@ -263,22 +265,7 @@ class Player extends Component {
 
 	render() {
 		let search = this.state.searchResult;
-		const { nowPlaying, queue, users, room, searchedYet } = this.state;
-		let resultList;
-		if (searchedYet) {
-			resultList = (
-				<ul className='search-res'>
-					{search.map((song) => (
-						<li key={song.id} onClick={() => this.addToQueue(song)}>
-							<p className='title'>{song.name}</p>
-							<p className='artist'>
-								{song.album} - {song.artist}
-							</p>
-						</li>
-					))}
-				</ul>
-			);
-		}
+		const { nowPlaying, queue, users, room } = this.state;
 
 		let queueListItems = (
 			<ul className='queue-list'>
@@ -323,10 +310,28 @@ class Player extends Component {
 						<div className='up-next'>
 							<div className='title'>Up Next</div>
 							<Popup modal closeOnDocumentClick trigger={<button className='add'>+</button>}>
-								<form className='search-form' autocomplete='off' onSubmit={this.handleSearch}>
-									<input type='text' placeholder='Search for a song...' name='searchValue' />
-								</form>
-								{resultList}
+								{(close) => (
+									<div>
+										<form className='search-form' autocomplete='off' onSubmit={this.handleSearch}>
+											<input type='text' placeholder='Search for a song...' name='searchValue' />
+										</form>
+										<ul className='search-res'>
+											{search.map((song) => (
+												<li
+													key={song.id}
+													onClick={() => {
+														close();
+														this.addToQueue(song);
+													}}>
+													<p className='title'>{song.name}</p>
+													<p className='artist'>
+														{song.album} - {song.artist}
+													</p>
+												</li>
+											))}
+										</ul>
+									</div>
+								)}
 							</Popup>
 						</div>
 						{queueListItems}
