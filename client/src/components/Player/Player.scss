@@ -31,6 +31,7 @@ button {
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
+	width: 75vw;
 	height: 70vh;
 
 	.room {
@@ -40,8 +41,8 @@ button {
 	}
 
 	.album-art {
-		width: 340px;
-		height: 340px;
+		width: 300px;
+		height: 300px;
 		border-radius: 15px;
 		padding: 12px;
 	}
@@ -80,6 +81,7 @@ button {
 	flex-direction: column;
 	align-items: center;
 	flex-basis: 25%;
+	width: 75vw;
 	height: 70vh;
 
 	.up-next {
@@ -100,6 +102,7 @@ button {
 	.queue-list {
 		border-radius: 5px;
 		width: 100%;
+		max-height: 25vh;
 		overflow-y: scroll;
 		scrollbar-width: none;
 		list-style: none;
@@ -177,5 +180,34 @@ button {
 		width: 100vw;
 		background: $bg;
 		color: white;
+	}
+
+	.queue-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		flex-basis: 25%;
+		width: auto;
+		height: 70vh;
+
+		.queue-list {
+			max-height: 70vh;
+		}
+	}
+
+	.player-container {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		width: auto;
+		height: 70vh;
+
+		.album-art {
+			width: 340px;
+			height: 340px;
+			border-radius: 15px;
+			padding: 12px;
+		}
 	}
 }
