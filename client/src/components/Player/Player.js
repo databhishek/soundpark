@@ -51,6 +51,19 @@ class Player extends Component {
 	}
 
 	componentDidMount() {
+		let room = new URLSearchParams(this.props.location.search).get('room');
+		if (room) {
+			window.history.replaceState({}, document.title, '/');
+			toast.success('Room Code: ' + room, {
+				toastId: 'createRoom',
+				position: 'top-center',
+				autoClose: false,
+				closeOnClick: false,
+				pauseOnHover: true,
+				draggable: false,
+				limit: 1
+			});
+		}
 		if (!this.state.room.code) {
 			window.location.href = '/?joinRoom=false';
 		}

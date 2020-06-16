@@ -84,6 +84,69 @@ $bg2: #333432;
 	}
 }
 
+.popup-content {
+	background: $bg !important;
+	border-radius: 5px;
+	opacity: 0.9;
+}
+
+.search-form {
+	background: transparent;
+
+	input {
+		width: 100%;
+		color: white;
+		height: 3vh;
+		background-color: $bg2;
+		border: none;
+		border-radius: 2px;
+		padding: 5px 5px;
+		opacity: 0.9;
+	}
+}
+
+.create-modal {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-content: center;
+	height: 20vh;
+	color: white;
+
+	.header {
+		font-size: 24px;
+		width: 100%;
+		text-align: center;
+		text-shadow: 1px 1px 7px #fff, 1px 1px 7px #ccc;
+		padding: 20px 5px;
+	}
+
+	.create-form {
+		display: flex;
+		flex-direction: column;
+		align-content: center;
+
+		input {
+			width: 90%;
+			color: white;
+			border: none;
+			border-radius: 5px;
+			height: 3vh;
+			background: $bg2;
+			margin: auto;
+			padding-left: 5px;
+		}
+
+		.create-submit {
+			font-size: 18px;
+			padding-top: 20px;
+			&:hover {
+				transform: scale(1.2);
+			}
+		}
+	}
+}
+
 @media only screen and (max-width: 768px) {
 	.banner {
 		width: 90vw;

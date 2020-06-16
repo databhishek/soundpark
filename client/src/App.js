@@ -6,7 +6,6 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './components/Home/Home';
 import Player from './components/Player/Player';
-import CreateRoom from './components/CreateRoom/CreateRoom';
 import SocketContext from './Socket';
 
 // Setup global socket
@@ -28,7 +27,6 @@ class App extends Component {
 							<Switch>
 								<Route exact path='/' component={Home} />
 								<Route path='/player' component={Player} />
-								<Route path='/createRoom' component={CreateRoom} />
 							</Switch>
 						</div>
 					</Router>

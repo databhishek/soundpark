@@ -24,6 +24,12 @@ button {
 	width: 100vw;
 	background: $bg;
 	color: white;
+
+	.popup-content {
+		padding: 0 !important;
+		background: transparent !important;
+		border: none !important;
+	}
 }
 
 .player-container {
@@ -127,12 +133,6 @@ button {
 			margin-left: -1.05em;
 		}
 	}
-}
-
-.popup-content {
-	padding: 0 !important;
-	background: transparent !important;
-	border: none !important;
 }
 
 .search-form {

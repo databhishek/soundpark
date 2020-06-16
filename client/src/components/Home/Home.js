@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import Axios from 'axios';
+import Popup from 'reactjs-popup';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import SocketContext from '../../Socket';
@@ -24,6 +25,15 @@ Axios.interceptors.response.use(
 );
 
 class Home extends Component {
+	constructor(props) {
+		super(props);
+
+		this.state = {
+			roomName: '',
+			roomCode: ''
+		};
+	}
+
 	UNSAFE_componentWillMount() {
 		let loggedIn = new URLSearchParams(this.props.location.search).get('loggedIn');
 		if (loggedIn === 'true') {
@@ -94,7 +104,6 @@ class Home extends Component {
 					});
 				} else {
 					await this.setDevice();
-					console.log('This ran?');
 					sessionStorage.setItem('roomCode', roomCode);
 					await Axios.get('/joinRoom', {
 						params: { roomCode: roomCode }
@@ -110,13 +119,73 @@ class Home extends Component {
 		}
 	};
 
+	createRoom = async () => {
+		try {
+			let roomName = this.state.roomName;
+			if (localStorage.getItem('loggedIn') === 'true') {
+				let resp = await Axios.post('/createRoom', { roomName });
+				if (resp.status === 200) {
+					console.log(resp.data);
+					this.setState({ roomCode: resp.data });
+					sessionStorage.setItem('roomCode', this.state.roomCode);
+					this.props.socket.emit('join_room', this.state.roomCode);
+				}
+				await this.getDevices();
+				if (!sessionStorage.getItem('deviceID')) {
+					toast.error('Please open Spotify first.', {
+						toastId: 'noSpotify',
+						position: 'top-center',
+						autoClose: 3000,
+						closeOnClick: true,
+						pauseOnHover: true,
+						draggable: true,
+						limit: 1
+					});
+				} else {
+					await this.setDevice();
+					await Axios.get('/joinRoom', {
+						params: { roomCode: this.state.roomCode }
+					});
+					console.log('Joined room ' + this.state.roomCode);
+					window.location.href = '/player?room=' + this.state.roomCode;
+				}
+			} else {
+				window.location.href = '/?loggedIn=false';
+			}
+		} catch (err) {
+			console.log(err);
+		}
+	};
+
+	handleCreate = async (e) => {
+		try {
+			e.preventDefault();
+			this.setState(
+				{
+					roomName: e.target.roomName.value
+				},
+				this.createRoom
+			);
+		} catch (err) {
+			console.log(err);
+		}
+	};
+
 	render() {
 		let Btns =
 			localStorage.getItem('loggedIn') === 'true' ? (
 				<div className='nav'>
-					<Link to='/createRoom'>
-						<button className='skewBtn green'>Create</button>
-					</Link>
+					<Popup modal closeOnDocumentClick trigger={<button className='skewBtn green'>Create</button>}>
+						<div className='create-modal'>
+							<div className='header'>Create Room</div>
+							<form className='create-form' onSubmit={this.handleCreate}>
+								<input type='text' name='roomName' placeholder='Room Name' />
+								<button className='create-submit' type='submit'>
+									Create!
+								</button>
+							</form>
+						</div>
+					</Popup>
 					<Link to='/player'>
 						<button className='skewBtn green'>Player</button>
 					</Link>
