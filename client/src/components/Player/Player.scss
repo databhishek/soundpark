@@ -92,6 +92,11 @@ button {
 	justify-content: space-around;
 	align-items: center;
 	overflow: scroll;
+	scrollbar-width: none;
+	&::-webkit-scrollbar {
+		display: none;
+	}
+	-ms-overflow-style: none;
 
 	.popup-content {
 		padding: 0 !important;
