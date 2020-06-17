@@ -21,6 +21,17 @@ Axios.interceptors.response.use(
 		if (error.response.status === 401) {
 			window.location.href = '/?loggedIn=false';
 		}
+		if (error.response.status === 400) {
+			toast.error('Invalid room code', {
+				toastId: 'invalidRoomCode',
+				position: 'top-center',
+				autoClose: 3000,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+				limit: 1
+			});
+		}
 		return error;
 	}
 );
@@ -105,12 +116,14 @@ class Home extends Component {
 					});
 				} else {
 					await this.setDevice();
-					sessionStorage.setItem('roomCode', roomCode);
-					await Axios.get('/joinRoom', {
+					let resp = await Axios.get('/joinRoom', {
 						params: { roomCode: roomCode }
 					});
-					console.log('Joined room ' + roomCode);
-					window.location.href = '/player';
+					if (resp.status === 200) {
+						sessionStorage.setItem('roomCode', roomCode);
+						console.log('Joined room ' + roomCode);
+						window.location.href = '/player';
+					}
 				}
 			} else {
 				window.location.href = '/?loggedIn=false';

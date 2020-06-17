@@ -11,7 +11,8 @@ const socket = io('https://soundpark.live', {
 	secure: true,
 	rejectUnauthorized: true,
 	path: '/rooms/socket.io',
-	pingTimeout: 10000000
+	transports: ['websocket'],
+	upgrade: false
 });
 
 // const socket = io('http://localhost:8888', {
