@@ -52,6 +52,7 @@ app.use(bodyParser.json());
 
 app.use('/', routes);
 
+io.set('transports', ['websocket']);
 io.on('connection', (socket) => {
 	// Socket Connected
 	console.log('Socket connected: ' + socket.id);
@@ -64,7 +65,7 @@ io.on('connection', (socket) => {
 			} else {
 				db.Room.find({ roomCode: roomCode }, null, (err, data) => {
 					if (err) console.log(err);
-					else {
+					else if(data.length) {
 						console.log('Joined room: ' + roomCode);
 						io.to(roomCode).emit('joined_room', {
 							roomName: data[0].roomName,

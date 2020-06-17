@@ -10,7 +10,8 @@ import cover from '../../assets/cover.png';
 import SocketContext from '../../Socket';
 import './Player.scss';
 
-const baseURL = 'http://13.233.142.76/api';
+const baseURL = 'https://soundpark.live/api';
+// const baseURL = 'http://localhost:8888';
 
 // Axios config
 Axios.defaults.baseURL = baseURL;
@@ -23,6 +24,17 @@ Axios.interceptors.response.use(
 	(error) => {
 		if (error.response.status === 401) {
 			window.location.href = '/?loggedIn=false';
+		}
+		if (error.response.status === 404) {
+			console.log('mkcccccc');
+			toast.error('Please open Spotify on your device and press play.', {
+				position: 'top-center',
+				autoClose: 3000,
+				hideProgressBar: false,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true
+			});
 		}
 		return error;
 	}
@@ -137,6 +149,9 @@ class Player extends Component {
 			this.setState({
 				queue: data
 			});
+		});
+		this.props.socket.on('reconnect_attempt', async () => {
+			this.props.socket.io.opts.transports = ['polling', 'websocket'];
 		});
 		// window.addEventListener('beforeunload', function(e){
 		// 	var confirmationMessage = 'o/';

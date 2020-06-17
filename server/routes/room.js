@@ -35,7 +35,7 @@ module.exports = (io) => {
 	exp.joinRoom = async (req, res) => {
 		try {
 			let room = await db.Room.find({ roomCode: req.query.roomCode });
-			if (!room) return res.send('Invalid room code.');
+			if (!room.length) return res.status(400).send('Invalid room code.');
 			console.log('Joining room: ' + req.user.displayName);
 			await db.Room.findOneAndUpdate(
 				{ roomCode: req.query.roomCode, 'users.id': { $ne: req.user.id } },

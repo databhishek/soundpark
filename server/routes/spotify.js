@@ -54,11 +54,12 @@ module.exports = (io) => {
 					}
 				}
 			);
-			console.log(resp);
+			console.log('/play called with status: ' + resp.status);
 			return res.status(200).send('Success.');
-		} catch (e) {
-			console.log(e);
-			return res.send(e);
+		} catch (err) {
+			if(err.response.status === 404)
+				return res.status(404).send('Not found');
+			return res.send(err);
 		}
 	};
 
@@ -113,6 +114,7 @@ module.exports = (io) => {
 				await axios.put('/me/player/pause', null, {
 					headers: { Authorization: 'Bearer ' + req.user.accessToken }
 				});
+				console.log('/pause called with status: ' + resp.status);
 				return res.send('Paused');
 			} else {
 				await axios.put(
@@ -128,9 +130,12 @@ module.exports = (io) => {
 						headers: { Authorization: 'Bearer ' + req.user.accessToken }
 					}
 				);
+				console.log('/play called with status: ' + resp.status);
 				return res.send('Played');
 			}
 		} catch (err) {
+			if(err.response.status === 404)
+				return res.status(404).send('Not found');
 			return res.send(err);
 		}
 	};
@@ -159,8 +164,12 @@ module.exports = (io) => {
 					}
 				);
 			}
+			console.log('/play called with status: ' + resp.status);
+			return res.status(200).send('Success');
 		} catch (err) {
-			console.log(err);
+			if(err.response.status === 404)
+				return res.status(404).send('Not found');
+			res.send(err);
 		}
 	};
 
@@ -184,21 +193,6 @@ module.exports = (io) => {
 			}
 
 			return res.send('Success.');
-		} catch (err) {
-			console.log(err);
-			return res.send(err);
-		}
-	};
-
-	exp.playNextReturns = async (req, res) => {
-		try {
-			let id = req.body.id;
-			if (req.user.id === id) return res.status(200).send('You are the one who pressed next.');
-			await axios.post('/me/player/next', null, {
-				params: { device_id: req.user.currentDevice },
-				headers: { Authorization: 'Bearer ' + req.user.accessToken }
-			});
-			return res.status(200).send('Success.');
 		} catch (err) {
 			console.log(err);
 			return res.send(err);
