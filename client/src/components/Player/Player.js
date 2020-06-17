@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import Popup from 'reactjs-popup';
-import { faForward, faPause, faSync } from '@fortawesome/free-solid-svg-icons';
+import { faForward, faPause, faPlay } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import 'react-toastify/dist/ReactToastify.css';
 import cover from '../../assets/cover.png';
@@ -296,7 +296,7 @@ class Player extends Component {
 									<FontAwesomeIcon icon={faPause} className='fa' size='2x' />
 								</button>
 								<button onClick={this.playPause}>
-									<FontAwesomeIcon icon={faSync} className='fa' size='2x' />
+									<FontAwesomeIcon icon={faPlay} className='fa' size='2x' />
 								</button>
 								<button onClick={this.playNext}>
 									<FontAwesomeIcon icon={faForward} className='fa' size='2x' />
