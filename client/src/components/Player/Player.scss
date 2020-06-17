@@ -14,16 +14,84 @@ button {
 	border: none;
 }
 
-.container {
+.main-container {
 	display: flex;
-	font-family: 'Muli', sans-serif;
 	flex-direction: column;
-	justify-content: space-around;
-	align-items: center;
+	justify-content: flex-start;
 	height: 100vh;
 	width: 100vw;
 	background: $bg;
 	color: white;
+}
+
+.main-nav {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	padding-top: 5px;
+	// background: $bg2;
+	height: 6vh;
+	width: 100vw;
+	align-content: center;
+
+	.logo {
+		height: 80%;
+		padding: 5px 5px;
+	}
+
+	.nav-controls {
+		padding: 10px 10px;
+
+		.members-icon,
+		.leave-icon,
+		.logout-icon {
+			padding: 2px;
+			font-size: 24px;
+		}
+	}
+}
+
+.members-list {
+	list-style: none;
+	background: $bg2;
+	border-radius: 5px;
+	text-align: center;
+	padding: 10px 5px;
+	width: 250px;
+	height: 400px;
+	overflow: scroll;
+	scrollbar-width: none;
+	&::-webkit-scrollbar {
+		display: none;
+	}
+	-ms-overflow-style: none;
+
+	li {
+		font-size: 20px;
+		color: white;
+		padding-bottom: 5px;
+		text-shadow: 1px 1px 5px #fff, 1px 1px 5px #ccc;
+
+		&:nth-child(odd) {
+			color: yellow;
+			text-shadow: 1px 1px 5px yellow, 1px 1px 5px #ccc;
+		}
+	}
+
+	.list-title {
+		margin-top: -3px;
+		font-size: 22px;
+		color: white;
+		text-shadow: none;
+	}
+}
+
+.container {
+	display: flex;
+	margin-top: 25px;
+	flex-direction: column;
+	justify-content: space-around;
+	align-items: center;
 
 	.popup-content {
 		padding: 0 !important;
@@ -39,13 +107,7 @@ button {
 	align-items: center;
 	width: 75vw;
 	height: 70vh;
-
-	.room {
-		font-size: 28px;
-		text-shadow: 1px 1px 7px #fff, 1px 1px 7px #ccc;
-		margin-bottom: 5px;
-	}
-
+	
 	.album-art {
 		width: 300px;
 		height: 300px;
@@ -58,8 +120,8 @@ button {
 		padding: 12px;
 		// width: 40%;
 		// white-space: nowrap;
-		overflow-x: hidden;
-		scrollbar-width: none;
+		// overflow-x: hidden;
+		// scrollbar-width: none;
 	}
 
 	.artist {
@@ -185,6 +247,51 @@ button {
 }
 
 @media screen and (min-width: 768px) {
+	.main-nav {
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		padding-top: 5px;
+		height: 6vh;
+		width: 100vw;
+		align-content: center;
+
+		.logo {
+			height: 5vh;
+			padding: 5px 5px;
+		}
+
+		.nav-controls {
+			padding: 8px 10px;
+			.members-icon,
+			.leave-icon,
+			.logout-icon {
+				font-size: 1.5rem;
+				&:hover {
+					transform: scale(1.1);
+				}
+			}
+
+			.members-icon {
+				&:hover {
+					color: #4267b2;
+				}
+			}
+
+			.leave-icon {
+				&:hover {
+					color: orange;
+				}
+			}
+
+			.logout-icon {
+				&:hover {
+					color: red;
+				}
+			}
+		}
+	}
+
 	.container {
 		display: flex;
 		flex-direction: row;

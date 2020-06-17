@@ -8,7 +8,8 @@ import SocketContext from '../../Socket';
 import banner from '../../assets/banner.png';
 import './Home.scss';
 
-const baseURL = 'http://13.233.142.76/api';
+const baseURL = 'https://soundpark.live/api';
+// const baseURL = 'http://localhost:8888';
 
 // Axios config
 Axios.defaults.baseURL = baseURL;
@@ -215,8 +216,6 @@ class Home extends Component {
 	}
 }
 
-const HomewithSocket = (props) => (
-	<SocketContext.Consumer>{(socket) => <Home {...props} socket={socket} />}</SocketContext.Consumer>
-);
+const HomewithSocket = (props) => <SocketContext.Consumer>{(socket) => <Home {...props} socket={socket} />}</SocketContext.Consumer>;
 
 export default HomewithSocket;

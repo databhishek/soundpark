@@ -39,7 +39,7 @@ module.exports = (io) => {
 		try {
 			let room = req.body.room;
 			let Q = await db.Room.find({ roomCode: room });
-			console.log(Q);
+			// console.log(Q);
 			let Q2 = [];
 			Q2[0] = Q[0].queue[0].uri;
 			let resp = await axios.put(
@@ -54,7 +54,7 @@ module.exports = (io) => {
 					}
 				}
 			);
-			console.log(resp);
+			console.log(resp.status);
 			return res.status(200).send('Success.');
 		} catch (e) {
 			console.log(e);
@@ -80,12 +80,7 @@ module.exports = (io) => {
 				uri: songToAdd.uri,
 				duration: trackData.data.duration_ms
 			});
-			await db.Room.findOneAndUpdate(
-				{ roomCode: room },
-				{
-					$push: { queue: song }
-				}
-			);
+			await db.Room.findOneAndUpdate({ roomCode: room }, { $push: { queue: song } });
 			let Q = await db.Room.find({ roomCode: room }, 'queue');
 			Q = Q[0].queue;
 			io.to(room).emit('added_to_queue', Q);
@@ -168,10 +163,7 @@ module.exports = (io) => {
 		try {
 			let roomCode = req.body.roomCode;
 			timer.clearTimers(roomCode);
-			let room = await db.Room.findOneAndUpdate(
-				{ roomCode: roomCode },
-				{ $pop: { queue: -1 }, $set: { changedat: new Date().getTime() } }
-			);
+			let room = await db.Room.findOneAndUpdate({ roomCode: roomCode }, { $pop: { queue: -1 }, $set: { changedat: new Date().getTime() } });
 			let Q = room.queue;
 			Q.shift(); // Mongo returns queue before the update
 			if (Q.length > 0) {
@@ -211,6 +203,7 @@ module.exports = (io) => {
 				headers: { Authorization: 'Bearer ' + req.user.accessToken }
 			});
 			resp = resp.data.devices;
+			console.log(resp);
 			resp.forEach((ele, idx, arr) => {
 				if (ele.is_restricted) arr.splice(idx, 1);
 			});

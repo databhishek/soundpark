@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import Axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import Popup from 'reactjs-popup';
@@ -7,10 +6,12 @@ import { faForward, faPause, faSync } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import 'react-toastify/dist/ReactToastify.css';
 import cover from '../../assets/cover.png';
+import Header from '../Header';
 import SocketContext from '../../Socket';
 import './Player.scss';
 
-const baseURL = 'http://13.233.142.76/api';
+const baseURL = 'https://soundpark.live/api';
+// const baseURL = 'http://localhost:8888';
 
 // Axios config
 Axios.defaults.baseURL = baseURL;
@@ -138,6 +139,7 @@ class Player extends Component {
 				queue: data
 			});
 		});
+		this.getNowPlaying();
 		// window.addEventListener('beforeunload', function(e){
 		// 	var confirmationMessage = 'o/';
 
@@ -259,18 +261,6 @@ class Player extends Component {
 		}
 	};
 
-	leaveRoom = async () => {
-		try {
-			await Axios.get('/leaveRoom', {
-				params: { roomCode: this.state.room.code }
-			});
-			await sessionStorage.removeItem('roomCode');
-			this.props.socket.emit('leave_room', this.state.room.code);
-		} catch (err) {
-			console.log(err);
-		}
-	};
-
 	handleSearch = async (e) => {
 		e.preventDefault();
 		this.setState({ searchValue: e.target.searchValue.value }, this.searchSong);
@@ -278,7 +268,7 @@ class Player extends Component {
 
 	render() {
 		let search = this.state.searchResult;
-		const { nowPlaying, queue, users, room } = this.state;
+		const { nowPlaying, queue } = this.state;
 
 		let queueListItems = (
 			<ul className='queue-list'>
@@ -291,63 +281,58 @@ class Player extends Component {
 			</ul>
 		);
 
-		let usersListItems = <ul className='users-list'>{users.map((u) => <li key={u.id}>{u.name}</li>)}</ul>;
-
 		return (
 			<div>
 				<ToastContainer />
-				<div className='container'>
-					<div className='player-container'>
-						<div className='room'>{room.name}</div>
-						<img className='album-art' src={nowPlaying.albumArt} alt='albumArt' />
-						<div className='title'>{nowPlaying.name}</div>
-						<div className='artist'>{nowPlaying.artist}</div>
-						<div className='controls'>
-							<button onClick={this.playPause}>
-								<FontAwesomeIcon icon={faPause} className='fa' size='2x' />
-							</button>
-							<button onClick={this.playPause}>
-								<FontAwesomeIcon icon={faSync} className='fa' size='2x' />
-							</button>
-							<button onClick={this.playNext}>
-								<FontAwesomeIcon icon={faForward} className='fa' size='2x' />
-							</button>
+				<div className='main-container'>
+					<Header />
+					<div className='container'>
+						<div className='player-container'>
+							<img className='album-art' src={nowPlaying.albumArt} alt='albumArt' />
+							<div className='title'>{nowPlaying.name}</div>
+							<div className='artist'>{nowPlaying.artist}</div>
+							<div className='controls'>
+								<button onClick={this.playPause}>
+									<FontAwesomeIcon icon={faPause} className='fa' size='2x' />
+								</button>
+								<button onClick={this.playPause}>
+									<FontAwesomeIcon icon={faSync} className='fa' size='2x' />
+								</button>
+								<button onClick={this.playNext}>
+									<FontAwesomeIcon icon={faForward} className='fa' size='2x' />
+								</button>
+							</div>
 						</div>
-						{/* <Link to='/'>
-						<button className='controls' onClick={this.leaveRoom}>
-							LEAVE
-						</button>
-					</Link> */}
-					</div>
-					<div className='queue-container'>
-						<div className='up-next'>
-							<div className='title'>Up Next</div>
-							<Popup modal closeOnDocumentClick trigger={<button className='add'>+</button>}>
-								{(close) => (
-									<div>
-										<form className='search-form' autocomplete='off' onSubmit={this.handleSearch}>
-											<input type='text' placeholder='Search for a song...' name='searchValue' />
-										</form>
-										<ul className='search-res'>
-											{search.map((song) => (
-												<li
-													key={song.id}
-													onClick={() => {
-														close();
-														this.addToQueue(song);
-													}}>
-													<p className='title'>{song.name}</p>
-													<p className='artist'>
-														{song.album} - {song.artist}
-													</p>
-												</li>
-											))}
-										</ul>
-									</div>
-								)}
-							</Popup>
+						<div className='queue-container'>
+							<div className='up-next'>
+								<div className='title'>Up Next</div>
+								<Popup modal closeOnDocumentClick trigger={<button className='add'>+</button>}>
+									{(close) => (
+										<div>
+											<form className='search-form' autocomplete='off' onSubmit={this.handleSearch}>
+												<input type='text' placeholder='Search for a song...' name='searchValue' />
+											</form>
+											<ul className='search-res'>
+												{search.map((song) => (
+													<li
+														key={song.id}
+														onClick={() => {
+															close();
+															this.addToQueue(song);
+														}}>
+														<p className='title'>{song.name}</p>
+														<p className='artist'>
+															{song.album} - {song.artist}
+														</p>
+													</li>
+												))}
+											</ul>
+										</div>
+									)}
+								</Popup>
+							</div>
+							{queueListItems}
 						</div>
-						{queueListItems}
 					</div>
 				</div>
 			</div>
@@ -355,8 +340,6 @@ class Player extends Component {
 	}
 }
 
-const PlayerwithSocket = (props) => (
-	<SocketContext.Consumer>{(socket) => <Player {...props} socket={socket} />}</SocketContext.Consumer>
-);
+const PlayerwithSocket = (props) => <SocketContext.Consumer>{(socket) => <Player {...props} socket={socket} />}</SocketContext.Consumer>;
 
 export default PlayerwithSocket;

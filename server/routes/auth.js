@@ -23,12 +23,15 @@ module.exports = (passport) => {
 
 	exp.callbackSpotify = () => {
 		return passport.authenticate('spotify', {
-			failureRedirect:
-				process.env.MODE === 'PROD'
-					? process.env.SERVER_URI + '?loggedIn=false'
-					: 'http://localhost:3000/?loggedIn=false'
+			failureRedirect: process.env.MODE === 'PROD' ? process.env.SERVER_URI + '?loggedIn=false' : 'http://localhost:3000/?loggedIn=false'
 		});
 	};
+
+	exp.signOut = async (req, res) => {
+		req.logout();
+		console.log('Signed out.');
+		res.redirect(process.env.MODE === 'PROD' ? process.env.SERVER_URI + '?loggedIn=false' : 'http://localhost:3000/?loggedIn=false');
+	}
 
 	exp.setupRefresh = async (req, res) => {
 		try {
@@ -67,11 +70,7 @@ module.exports = (passport) => {
 
 			// Successful authentication, redirect home.
 			console.log('Successful login.');
-			res.redirect(
-				process.env.MODE === 'PROD'
-					? process.env.SERVER_URI + '?loggedIn=true'
-					: 'http://localhost:3000/?loggedIn=true'
-			);
+			res.redirect(process.env.MODE === 'PROD' ? process.env.SERVER_URI + '?loggedIn=true' : 'http://localhost:3000/?loggedIn=true');
 		} catch (e) {
 			console.log(e);
 		}

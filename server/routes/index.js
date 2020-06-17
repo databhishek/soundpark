@@ -34,6 +34,7 @@ module.exports = (passport, io) => {
 	// Auth Routes
 	router.get('/auth/spotify', auth.redirectSpotify());
 	router.get('/callback', auth.callbackSpotify(), auth.setupRefresh);
+	router.post('/signOut', auth.signOut);
 
 	return router;
 };
