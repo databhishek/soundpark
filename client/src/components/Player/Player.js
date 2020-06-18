@@ -102,7 +102,18 @@ class Player extends Component {
 		this.props.socket.on('currently_playing', async (data) => {
 			console.log('Song change event.');
 			if (data) {
-				await Axios.post('/queueReturns', { room: this.state.room.code });
+				let resp = await Axios.post('/queueReturns', { room: this.state.room.code });
+				if(resp.status !== 200){
+					toast.error('Please open Spotify on your device and press Play', {
+						toastId: 'notFound',
+						position: 'top-center',
+						autoClose: 3000,
+						closeOnClick: true,
+						pauseOnHover: true,
+						draggable: true,
+						limit: 1
+					});				
+				}
 				this.state.queue.shift();
 				let q = this.state.queue;
 				this.setState({
@@ -223,7 +234,7 @@ class Player extends Component {
 				queue: resp.data
 			});
 			console.log('Added to queue.');
-			toast.success('Succesfully added to queue.', {
+			toast.success('Added to queue.', {
 				toastId: 'toQueue',
 				position: 'top-center',
 				autoClose: 2000,
@@ -255,6 +266,17 @@ class Player extends Component {
 					roomCode: roomCode
 				}
 			});
+			if(resp.status !== 200){
+				toast.error('Please open Spotify on your device and press Play', {
+					toastId: 'notFound',
+					position: 'top-center',
+					autoClose: 3000,
+					closeOnClick: true,
+					pauseOnHover: true,
+					draggable: true,
+					limit: 1
+				});				
+			}
 			console.log(resp);
 		} catch (err) {
 			console.log(err);

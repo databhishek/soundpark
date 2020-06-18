@@ -215,12 +215,15 @@ class Home extends Component {
 			<div>
 				<div className='home-container'>
 					<img className='banner' src={banner} alt='banner' />
-					<form className='room-form' onSubmit={this.handleSubmit}>
-						<input type='text' placeholder='Enter room to join.' name='roomCode' />
-						<button className='submit-btn' type='submit'>
-							&rarr;
-						</button>
-					</form>
+					{
+						localStorage.getItem('loggedIn') === true ?
+						<form className='room-form' onSubmit={this.handleSubmit}>
+							<input type='text' placeholder='Enter room to join.' name='roomCode' />
+							<button className='submit-btn' type='submit'>
+								&rarr;
+							</button>
+						</form> : <div></div>
+					}
 					{Btns}
 				</div>
 				<ToastContainer />

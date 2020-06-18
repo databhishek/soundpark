@@ -265,7 +265,8 @@ button {
 		flex-direction: row;
 		justify-content: space-between;
 		background: $bg2;
-		border-bottom: 5px ridge $bg2;
+		border-bottom: 5px $bg2;
+		box-shadow: 1px #57575757;
 		padding-top: 5px;
 		height: 45px;
 		width: 100vw;
