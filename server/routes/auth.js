@@ -29,8 +29,8 @@ module.exports = (passport) => {
 
 	exp.signOut = async (req, res) => {
 		req.logout();
-		console.log('Signed out.');
-		res.redirect(process.env.MODE === 'PROD' ? process.env.SERVER_URI + '?loggedIn=false' : 'http://localhost:3000/?loggedIn=false');
+		// res.redirect(process.env.MODE === 'PROD' ? process.env.SERVER_URI + '?loggedIn=false' : 'http://localhost:3000/?loggedIn=false');
+		res.status(200).send('Signed out');
 	}
 
 	exp.setupRefresh = async (req, res) => {

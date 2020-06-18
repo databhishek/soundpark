@@ -7,17 +7,13 @@ import Player from './components/Player/Player';
 import SocketContext from './Socket';
 
 // Setup global socket
-const socket = io('https://soundpark.live', {
+const socket = io('http://localhost:8888', {
 	secure: true,
 	rejectUnauthorized: true,
-	path: '/rooms/socket.io',
+	path: '/socket.io',
 	transports: ['websocket'],
 	upgrade: false
 });
-
-// const socket = io('http://localhost:8888', {
-// 	pingTimeout: 10000000
-// });
 
 class App extends Component {
 	render() {

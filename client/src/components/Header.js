@@ -59,6 +59,7 @@ export class Header extends Component {
 	signOut = async () => {
 		try {
 			await Axios.post('/signOut');
+			window.location.href = '/?loggedIn=false';
 		} catch (err) {
 			console.log(err);
 		}

@@ -70,9 +70,8 @@ module.exports = (io) => {
 			let trackData = await axios.get('/tracks/' + songToAdd.id, {
 				headers: { Authorization: 'Bearer ' + req.user.accessToken }
 			});
-			let currSong = await axios.get('/me/player/currently-playing', {
-				headers: { Authorization: 'Bearer ' + req.user.accessToken }
-			});
+			let curr = await db.Room.find({ roomCode: room});
+			curr = curr[0].changedat;
 			let song = new db.Queue({
 				trackName: songToAdd.name,
 				artist: songToAdd.artist,
@@ -90,7 +89,7 @@ module.exports = (io) => {
 			if (Q.length === 1) {
 				await db.Room.updateOne({ roomCode: room }, { $set: { changedat: new Date().getTime() } });
 				timer.setTimer(room, 0);
-			} else timer.setTimer(room, currSong.data.progress_ms);
+			} else timer.setTimer(room, new Date().getTime() - curr);
 			return res.status(200).send(Q2);
 		} catch (e) {
 			return res.send(e);

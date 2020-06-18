@@ -19,6 +19,28 @@ Axios.defaults.headers['Content-Type'] = 'application/json';
 Axios.defaults.withCredentials = true;
 Axios.interceptors.response.use(
 	(response) => {
+		if(response.status !== 200) {
+			toast.error('Please open Spotify on your device and press Play', {
+				toastId: 'notFound',
+				position: 'top-center',
+				autoClose: 15000,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+				limit: 1
+			});				
+		}
+		if(response.status === 403) {
+			toast.error('Playback supported only for Spotify Premium', {
+				toastId: 'notFound',
+				position: 'top-center',
+				autoClose: 3000,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+				limit: 1
+			});
+		}
 		return response;
 	},
 	(error) => {
@@ -102,18 +124,7 @@ class Player extends Component {
 		this.props.socket.on('currently_playing', async (data) => {
 			console.log('Song change event.');
 			if (data) {
-				let resp = await Axios.post('/queueReturns', { room: this.state.room.code });
-				if(resp.status !== 200){
-					toast.error('Please open Spotify on your device and press Play', {
-						toastId: 'notFound',
-						position: 'top-center',
-						autoClose: 3000,
-						closeOnClick: true,
-						pauseOnHover: true,
-						draggable: true,
-						limit: 1
-					});				
-				}
+				await Axios.post('/queueReturns', { room: this.state.room.code });
 				this.state.queue.shift();
 				let q = this.state.queue;
 				this.setState({
@@ -136,6 +147,7 @@ class Player extends Component {
 		});
 		this.props.socket.on('added_to_queue', async (data) => {
 			console.log('Add to queue event.');
+			console.log(data);
 			if (data.length === 1) {
 				await Axios.post('/queueReturns', { room: this.state.room.code });
 				this.setState({
@@ -150,7 +162,7 @@ class Player extends Component {
 				queue: data
 			});
 		});
-		this.getNowPlaying();
+		// this.getNowPlaying();
 		// window.addEventListener('beforeunload', function(e){
 		// 	var confirmationMessage = 'o/';
 
@@ -266,17 +278,6 @@ class Player extends Component {
 					roomCode: roomCode
 				}
 			});
-			if(resp.status !== 200){
-				toast.error('Please open Spotify on your device and press Play', {
-					toastId: 'notFound',
-					position: 'top-center',
-					autoClose: 3000,
-					closeOnClick: true,
-					pauseOnHover: true,
-					draggable: true,
-					limit: 1
-				});				
-			}
 			console.log(resp);
 		} catch (err) {
 			console.log(err);

@@ -175,9 +175,9 @@ button {
 		}
 
 		.add {
-			font-size: 22px;
+			font-size: 35px;
 			&:hover {
-				scale: transform(1.1);
+				transform: scale(1.3);
 			}
 		}
 	}
@@ -264,9 +264,8 @@ button {
 		display: flex;
 		flex-direction: row;
 		justify-content: space-between;
-		background: $bg2;
-		border-bottom: 5px $bg2;
-		box-shadow: 1px #57575757;
+		background: $bg;
+		border-bottom: 2px ridge $green;
 		padding-top: 5px;
 		height: 45px;
 		width: 100vw;

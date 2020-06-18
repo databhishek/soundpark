@@ -211,19 +211,20 @@ class Home extends Component {
 					</a>
 				</div>
 			);
+		let Form = 
+			localStorage.getItem('loggedIn') === 'true' ? (
+				<form className='room-form' onSubmit={this.handleSubmit}>
+					<input type='text' placeholder='Enter room to join.' name='roomCode' />
+					<button className='submit-btn' type='submit'>
+						&rarr;
+					</button>
+				</form>
+			) : (<div></div>)
 		return (
 			<div>
 				<div className='home-container'>
 					<img className='banner' src={banner} alt='banner' />
-					{
-						localStorage.getItem('loggedIn') === true ?
-						<form className='room-form' onSubmit={this.handleSubmit}>
-							<input type='text' placeholder='Enter room to join.' name='roomCode' />
-							<button className='submit-btn' type='submit'>
-								&rarr;
-							</button>
-						</form> : <div></div>
-					}
+					{Form}
 					{Btns}
 				</div>
 				<ToastContainer />
