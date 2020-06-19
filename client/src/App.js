@@ -7,10 +7,10 @@ import Player from './components/Player/Player';
 import SocketContext from './Socket';
 
 // Setup global socket
-const socket = io('http://localhost:8888', {
+const socket = io('https://soundpark.live', {
 	secure: true,
 	rejectUnauthorized: true,
-	path: '/socket.io',
+	path: '/rooms/socket.io',
 	transports: ['websocket'],
 	upgrade: false
 });
