@@ -34,7 +34,8 @@ button {
 	align-content: center;
 
 	.logo {
-		height: 80%;
+		height: 40px;
+		margin-top: 3px;
 		padding: 5px 5px;
 	}
 
@@ -43,9 +44,10 @@ button {
 
 		.members-icon,
 		.leave-icon,
-		.logout-icon {
+		.logout-icon,
+		.devices-icon {
 			padding: 2px;
-			font-size: 24px;
+			font-size: 20px;
 		}
 	}
 }
@@ -76,6 +78,38 @@ button {
 			color: yellow;
 			text-shadow: 1px 1px 5px yellow, 1px 1px 5px #ccc;
 		}
+	}
+
+	.list-title {
+		margin-top: -3px;
+		font-size: 22px;
+		color: white;
+		text-shadow: none;
+	}
+}
+
+.devices-list {
+	list-style: none;
+	background: $bg2;
+	border-radius: 5px;
+	text-align: center;
+	padding: 10px 5px;
+	width: 250px;
+	height: 400px;
+	overflow: scroll;
+	scrollbar-width: none;
+	font-family: 'Muli' sans-serif;
+	&::-webkit-scrollbar {
+		display: none;
+	}
+	-ms-overflow-style: none;
+
+	li {
+		width: 100%;
+		height: 20px;
+		cursor: pointer;
+		color: white;
+		margin-bottom: 20px;
 	}
 
 	.list-title {
@@ -169,13 +203,12 @@ button {
 		flex-direction: row;
 		justify-content: space-between;
 		width: 100%;
-
 		.title {
 			font-size: 18px;
 		}
 
 		.add {
-			font-size: 35px;
+			font-size: 22px;
 			&:hover {
 				transform: scale(1.3);
 			}
@@ -280,11 +313,18 @@ button {
 			padding: 6px 10px;
 			.members-icon,
 			.leave-icon,
-			.logout-icon {
+			.logout-icon,
+			.devices-icon {
 				font-size: 1.5rem;
 				padding: 2px 7px;
 				&:hover {
 					transform: scale(1.1);
+				}
+			}
+
+			.devices-icon {
+				&:hover {
+					color: $green;
 				}
 			}
 
@@ -325,7 +365,7 @@ button {
 		align-items: center;
 		flex-basis: 25%;
 		width: auto;
-		height: 70vh;
+		height: 65vh;
 
 		.queue-list {
 			max-height: 70vh;

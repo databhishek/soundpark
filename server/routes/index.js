@@ -29,6 +29,7 @@ module.exports = (passport, io) => {
 	router.post('/playNext', ensureAuth, spotify.playNext);
 	router.get('/getDevices', ensureAuth, spotify.getDevices);
 	router.post('/setDevice', ensureAuth, spotify.setDevice);
+	router.get('/transferPlayback', ensureAuth, spotify.transferPlayback);
 
 	// Auth Routes
 	router.get('/auth/spotify', auth.redirectSpotify());

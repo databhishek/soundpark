@@ -39,7 +39,7 @@ $bg2: #333432;
 		background: none;
 		transition: 0.5s;
 		font-size: 22px;
-		border-radius: 5px;
+		border-radius: 20px;
 	}
 
 	.green {
@@ -60,6 +60,7 @@ $bg2: #333432;
 .room-form {
 	margin-bottom: 15px;
 	input {
+		margin-left: 37px;
 		color: white;
 		background-color: $bg2;
 		border: none;

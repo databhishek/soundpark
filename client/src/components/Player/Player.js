@@ -329,7 +329,7 @@ class Player extends Component {
 						<div className='queue-container'>
 							<div className='up-next'>
 								<div className='title'>Up Next</div>
-								<Popup modal closeOnDocumentClick trigger={<button className='add'>+</button>}>
+								<Popup modal closeOnDocumentClick trigger={<button className='add' title='Add to Queue'>+</button>}>
 									{(close) => (
 										<div>
 											<form className='search-form' autocomplete='off' onSubmit={this.handleSearch}>

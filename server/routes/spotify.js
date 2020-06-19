@@ -57,8 +57,8 @@ module.exports = (io) => {
 			console.log('/play called with status: ' + resp.status);
 			return res.status(200).send('Success.');
 		} catch (err) {
-			if(err.response.status === 404)
-				return res.status(404).send('Not found');
+			putput;
+			if (err.response.status === 404) return res.status(404).send('Not found');
 			return res.send(err);
 		}
 	};
@@ -70,7 +70,7 @@ module.exports = (io) => {
 			let trackData = await axios.get('/tracks/' + songToAdd.id, {
 				headers: { Authorization: 'Bearer ' + req.user.accessToken }
 			});
-			let curr = await db.Room.find({ roomCode: room});
+			let curr = await db.Room.find({ roomCode: room });
 			curr = curr[0].changedat;
 			let song = new db.Queue({
 				trackName: songToAdd.name,
@@ -128,8 +128,7 @@ module.exports = (io) => {
 				return res.send('Played');
 			}
 		} catch (err) {
-			if(err.response.status === 404)
-				return res.status(404).send('Not found');
+			if (err.response.status === 404) return res.status(404).send('Not found');
 			return res.send(err);
 		}
 	};
@@ -161,8 +160,7 @@ module.exports = (io) => {
 			console.log('/play called with status: ' + resp.status);
 			return res.status(200).send('Success');
 		} catch (err) {
-			if(err.response.status === 404)
-				return res.status(404).send('Not found');
+			if (err.response.status === 404) return res.status(404).send('Not found');
 			res.send(err);
 		}
 	};
@@ -217,6 +215,25 @@ module.exports = (io) => {
 			);
 			console.log('Device selected: ' + req.body.deviceID);
 			return res.status(200).send('Device selected: ' + req.body.deviceID);
+		} catch (err) {
+			console.log(err);
+			return res.send(err);
+		}
+	};
+
+	exp.transferPlayback = async (req, res) => {
+		try {
+			let reqData = {
+				device_ids: [
+					req.user.currentDevice
+				],
+				play: true
+			};
+			let resp = await axios.put('/me/player', reqData, {
+				headers: { Authorization: 'Bearer ' + req.user.accessToken }
+			});
+			console.log(resp);
+			return res.status(200).send('Success.');
 		} catch (err) {
 			console.log(err);
 			return res.send(err);
