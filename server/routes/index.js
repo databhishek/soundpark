@@ -25,7 +25,8 @@ module.exports = (passport, io) => {
 	router.get('/searchTrack', ensureAuth, spotify.searchTrack);
 	router.post('/addToQueue', ensureAuth, spotify.addToQueue);
 	router.post('/queueReturns', ensureAuth, spotify.queueReturns);
-	router.get('/playPause', ensureAuth, spotify.playPause);
+	router.get('/play', ensureAuth, spotify.play);
+	router.get('/pause', ensureAuth, spotify.pause);
 	router.post('/playNext', ensureAuth, spotify.playNext);
 	router.get('/getDevices', ensureAuth, spotify.getDevices);
 	router.post('/setDevice', ensureAuth, spotify.setDevice);

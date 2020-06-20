@@ -17,7 +17,7 @@ module.exports = (passport) => {
 			{
 				clientID: process.env.SPOTIFY_CLIENT_ID,
 				clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-				callbackURL: process.env.MODE === 'PROD' ? process.env.SERVER_URI + 'api/callback' : 'http://localhost:8888/callback'
+				callbackURL: 'http://soundpark.live/api/callback'
 			},
 			(accessToken, refreshToken, expires_in, profile, done) => {
 				db.User.findOneAndUpdate(

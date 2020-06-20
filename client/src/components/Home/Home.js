@@ -6,6 +6,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import SocketContext from '../../Socket';
 import banner from '../../assets/banner.png';
+import Footer from '../Footer';
 import './Home.scss';
 
 const baseURL = 'https://soundpark.live/api';
@@ -18,14 +19,36 @@ Axios.interceptors.response.use(
 		return response;
 	},
 	(error) => {
-		if (error.response.status === 401) {
-			window.location.href = '/?loggedIn=false';
-		}
 		if (error.response.status === 400) {
 			toast.error('Invalid room code', {
 				toastId: 'invalidRoomCode',
 				position: 'top-center',
 				autoClose: 3000,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+				limit: 1
+			});
+		}
+		if (error.response.status === 401) {
+			window.location.href = '/?loggedIn=false';
+		}
+		if (error.response.status === 403) {
+			toast.error('Playback supported only on Premium accounts', {
+				toastId: 'premium',
+				position: 'top-center',
+				autoClose: 3000,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+				limit: 1
+			});
+		}
+		if (error.response.status === 404) {
+			toast.error('Please open Spotify on your device and press Play', {
+				toastId: 'notFound',
+				position: 'top-center',
+				autoClose: 10000,
 				closeOnClick: true,
 				pauseOnHover: true,
 				draggable: true,
@@ -226,6 +249,7 @@ class Home extends Component {
 					<img className='banner' src={banner} alt='banner' />
 					{Form}
 					{Btns}
+					<Footer />
 				</div>
 				<ToastContainer />
 			</div>

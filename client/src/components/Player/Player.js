@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import 'react-toastify/dist/ReactToastify.css';
 import cover from '../../assets/cover.png';
 import Header from '../Header';
+import Footer from '../Footer';
 import SocketContext from '../../Socket';
 import './Player.scss';
 
@@ -17,39 +18,6 @@ const baseURL = 'https://soundpark.live/api';
 Axios.defaults.baseURL = baseURL;
 Axios.defaults.headers['Content-Type'] = 'application/json';
 Axios.defaults.withCredentials = true;
-Axios.interceptors.response.use(
-	(response) => {
-		if(response.status !== 200) {
-			toast.error('Please open Spotify on your device and press Play', {
-				toastId: 'notFound',
-				position: 'top-center',
-				autoClose: 15000,
-				closeOnClick: true,
-				pauseOnHover: true,
-				draggable: true,
-				limit: 1
-			});				
-		}
-		if(response.status === 403) {
-			toast.error('Playback supported only for Spotify Premium', {
-				toastId: 'notFound',
-				position: 'top-center',
-				autoClose: 3000,
-				closeOnClick: true,
-				pauseOnHover: true,
-				draggable: true,
-				limit: 1
-			});
-		}
-		return response;
-	},
-	(error) => {
-		if (error.response.status === 401) {
-			window.location.href = '/?loggedIn=false';
-		}
-		return error;
-	}
-);
 
 class Player extends Component {
 	constructor(props) {
@@ -270,10 +238,24 @@ class Player extends Component {
 		}
 	};
 
-	playPause = async () => {
+	play = async () => {
 		try {
 			let roomCode = sessionStorage.getItem('roomCode');
-			let resp = await Axios.get('/playPause', {
+			let resp = await Axios.get('/play', {
+				params: {
+					roomCode: roomCode
+				}
+			});
+			console.log(resp);
+		} catch (err) {
+			console.log(err);
+		}
+	};
+
+	pause = async () => {
+		try {
+			let roomCode = sessionStorage.getItem('roomCode');
+			let resp = await Axios.get('/pause', {
 				params: {
 					roomCode: roomCode
 				}
@@ -297,8 +279,11 @@ class Player extends Component {
 			<ul className='queue-list'>
 				{queue.map((song) => (
 					<li key={song.uri}>
-						<p className='track-title'>{song.trackName}</p>
-						<p className='track-artist'>{song.artist}</p>
+						<div>
+							<p className='track-title'>{song.trackName}</p>
+							<p className='track-artist'>{song.artist}</p>
+						</div>
+						<p className='added-by'>{song.addedBy}</p>
 					</li>
 				))}
 			</ul>
@@ -315,10 +300,10 @@ class Player extends Component {
 							<div className='title'>{nowPlaying.name}</div>
 							<div className='artist'>{nowPlaying.artist}</div>
 							<div className='controls'>
-								<button onClick={this.playPause}>
+								<button onClick={this.pause}>
 									<FontAwesomeIcon icon={faPause} className='fa' size='2x' />
 								</button>
-								<button onClick={this.playPause}>
+								<button onClick={this.play}>
 									<FontAwesomeIcon icon={faPlay} className='fa' size='2x' />
 								</button>
 								<button onClick={this.playNext}>
@@ -357,6 +342,7 @@ class Player extends Component {
 							{queueListItems}
 						</div>
 					</div>
+					<Footer />
 				</div>
 			</div>
 		);

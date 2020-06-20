@@ -23,13 +23,12 @@ module.exports = (passport) => {
 
 	exp.callbackSpotify = () => {
 		return passport.authenticate('spotify', {
-			failureRedirect: process.env.MODE === 'PROD' ? process.env.SERVER_URI + '?loggedIn=false' : 'http://localhost:3000/?loggedIn=false'
+			failureRedirect:  'https://soundpark.live/?loggedIn=false'
 		});
 	};
 
 	exp.signOut = async (req, res) => {
 		req.logout();
-		// res.redirect(process.env.MODE === 'PROD' ? process.env.SERVER_URI + '?loggedIn=false' : 'http://localhost:3000/?loggedIn=false');
 		res.status(200).send('Signed out');
 	}
 
@@ -70,7 +69,7 @@ module.exports = (passport) => {
 
 			// Successful authentication, redirect home.
 			console.log('Successful login.');
-			res.redirect(process.env.MODE === 'PROD' ? process.env.SERVER_URI + '?loggedIn=true' : 'http://localhost:3000/?loggedIn=true');
+			res.redirect('https://soundpark.live/?loggedIn=true');
 		} catch (e) {
 			console.log(e);
 		}

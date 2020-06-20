@@ -39,7 +39,8 @@ const QueueSchema = new mongoose.Schema({
 	album: String,
 	albumArt: String,
 	uri: String,
-	duration: Number
+	duration: Number,
+	addedBy: String
 });
 
 const RoomSchema = new mongoose.Schema({

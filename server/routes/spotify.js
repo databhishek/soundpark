@@ -78,7 +78,8 @@ module.exports = (io) => {
 				album: songToAdd.album,
 				albumArt: songToAdd.albumArt.url,
 				uri: songToAdd.uri,
-				duration: trackData.data.duration_ms
+				duration: trackData.data.duration_ms,
+				addedBy: req.user.displayName
 			});
 			await db.Room.findOneAndUpdate({ roomCode: room }, { $push: { queue: song } });
 			let Q = await db.Room.find({ roomCode: room }, 'queue');
@@ -96,7 +97,7 @@ module.exports = (io) => {
 		}
 	};
 
-	exp.playPause = async (req, res) => {
+	exp.pause = async (req, res) => {
 		try {
 			let room = await db.Room.find({ roomCode: req.query.roomCode });
 			let Q = [];
@@ -108,25 +109,35 @@ module.exports = (io) => {
 				await axios.put('/me/player/pause', null, {
 					headers: { Authorization: 'Bearer ' + req.user.accessToken }
 				});
-				console.log('/pause called with status: ' + resp.status);
-				return res.send('Paused');
-			} else {
-				await axios.put(
-					'/me/player/play',
-					{
-						uris: Q,
-						position_ms: new Date().getTime() - room[0].changedat
-					},
-					{
-						params: {
-							device_id: req.user.currentDevice
-						},
-						headers: { Authorization: 'Bearer ' + req.user.accessToken }
-					}
-				);
-				console.log('/play called with status: ' + resp.status);
-				return res.send('Played');
+				return res.status(200).send('Paused');
 			}
+			return res.status(200).send('Already paused') 
+		} catch (err) {
+			if (err.response.status === 404) return res.status(404).send('Not found');
+			return res.send(err);
+		}
+	};
+
+	exp.play = async (req, res) => {
+		try {
+			let room = await db.Room.find({ roomCode: req.query.roomCode });
+			let Q = [];
+			Q[0] = room[0].queue[0].uri;
+			await axios.put(
+				'/me/player/play',
+				{
+					uris: Q,
+					position_ms: new Date().getTime() - room[0].changedat
+				},
+				{
+					params: {
+						device_id: req.user.currentDevice
+					},
+					headers: { Authorization: 'Bearer ' + req.user.accessToken }
+				}
+			);
+			console.log('/play called with status: ' + resp.status);
+			return res.send('Played');
 		} catch (err) {
 			if (err.response.status === 404) return res.status(404).send('Not found');
 			return res.send(err);

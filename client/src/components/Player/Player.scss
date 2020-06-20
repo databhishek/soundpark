@@ -228,17 +228,29 @@ button {
 		list-style: none;
 		background: $bg2;
 
-		.track-title {
-			font-size: 18px;
-			// white-space: nowrap;
-			overflow-x: hidden;
-			margin-left: -1em;
-		}
+		li {
+			display: flex;
+			flex-direction: row;
+			justify-content: space-between;
 
-		.track-artist {
-			color: $secondaryText;
-			margin-top: -1em;
-			margin-left: -1.05em;
+			.track-title {
+				font-size: 18px;
+				// white-space: nowrap;
+				overflow-x: hidden;
+				margin-left: -1em;
+			}
+	
+			.track-artist {
+				color: $secondaryText;
+				margin-top: -1em;
+				margin-left: -1.05em;
+			}
+
+			.added-by {
+				margin-top: auto;
+				font-size: 13px;
+				padding: 5px 20px;
+			}
 		}
 	}
 }
