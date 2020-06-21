@@ -65,60 +65,66 @@ io.on('connection', (socket) => {
 	// Join Room
 	socket.on('join_room', (data) => {
 		socket.join(data.room, async () => {
-			if (data.room === null) {
-				console.log('No room yet.');
-			} else {
-				sockClients.push({
-					sockId: socket.id,
-					name: data.name
-				});
-				let dbData = await db.Room.find({ roomCode: data.room });
-				io.in(data.room).clients((err, clients) => {
-					if (err) console.log(err);
-					else {
-						// Map all ID's to their respective names
-						let clientNames = [];
-						clients.map((client) => {
-							let name = sockClients.find((sockClient) => sockClient.sockId === client);
-							if(name !== undefined)
-								clientNames.push(name);
-
-						});
-						console.log(clientNames);
-						console.log('Joined room: ' + data.room);
-						io.to(data.room).emit('joined_room', {
-							roomName: dbData[0].roomName,
-							queue: dbData[0].queue,
-							users: clientNames
-						});
-					}
-				});
+			try {
+				if (data.room === null) {
+					console.log('No room yet.');
+				} else {
+					sockClients.push({
+						sockId: socket.id,
+						name: data.name
+					});
+					let dbData = await db.Room.find({ roomCode: data.room });
+					io.in(data.room).clients((err, clients) => {
+						if (err) console.log(err);
+						else {
+							// Map all ID's to their respective names
+							let clientNames = [];
+							clients.map((client) => {
+								let name = sockClients.find((sockClient) => sockClient.sockId === client);
+								if (name !== undefined) clientNames.push(name);
+							});
+							console.log(clientNames);
+							console.log('Joined room: ' + data.room);
+							io.to(data.room).emit('joined_room', {
+								roomName: dbData[0].roomName,
+								queue: dbData[0].queue,
+								users: clientNames
+							});
+						}
+					});
+				}
+			} catch (err) {
+				console.log(err);
 			}
 		});
 	});
 
 	// Leave Room
 	socket.on('leave_room', (data) => {
-		socket.leave(data.room);
+		try {
+			socket.leave(data.room);
 
-		// Remove user from room list
-		sockClients = sockClients.filter((sockClient) => {
-			return sockClient.name !== data.name;
-		});
+			// Remove user from room list
+			sockClients = sockClients.filter((sockClient) => {
+				return sockClient.name !== data.name;
+			});
 
-		io.in(data.room).clients((err, clients) => {
-			if (err) console.log(err);
-			else {
-				// Map all ID's to their respective names
-				let clientNames = [];
-				clients.map((client) => {
-					let name = sockClients.find((sockClient) => sockClient.sockId === client);
-					clientNames.push(name);
-				});
-				console.log(clientNames);
-				io.to(data.room).emit('left_room', clientNames);
-			}
-		});
+			io.in(data.room).clients((err, clients) => {
+				if (err) console.log(err);
+				else {
+					// Map all ID's to their respective names
+					let clientNames = [];
+					clients.map((client) => {
+						let name = sockClients.find((sockClient) => sockClient.sockId === client);
+						clientNames.push(name);
+					});
+					console.log(clientNames);
+					io.to(data.room).emit('left_room', clientNames);
+				}
+			});
+		} catch (err) {
+			console.log(err);
+		}
 	});
 
 	// Socket Disconnected
