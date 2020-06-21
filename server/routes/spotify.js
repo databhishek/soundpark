@@ -57,7 +57,6 @@ module.exports = (io) => {
 			console.log('/play called with status: ' + resp.status);
 			return res.status(200).send('Success.');
 		} catch (err) {
-			putput;
 			if (err.response.status === 404) return res.status(404).send('Not found');
 			return res.send(err);
 		}
