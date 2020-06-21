@@ -58,9 +58,6 @@ class Player extends Component {
 		if (!this.state.room.code) {
 			window.location.href = '/?joinRoom=false';
 		}
-		this.props.socket.on('disconnect', () => {
-			if (sessionStorage.getItem('roomCode')) this.props.socket.emit('leave_room', { name: localStorage.getItem('dispName'), room: this.state.room.code });
-		});
 		this.props.socket.emit('join_room', { name: localStorage.getItem('dispName'), room: this.state.room.code });
 		this.props.socket.on('joined_room', (data) => {
 			if (data.queue.length) {
@@ -132,6 +129,10 @@ class Player extends Component {
 			this.setState({
 				queue: data
 			});
+		});
+		window.addEventListener('beforeunload', (e) => {
+			e.preventDefault();
+			if (sessionStorage.getItem('roomCode')) this.props.socket.emit('leave_room', { name: localStorage.getItem('dispName'), room: this.state.room.code });
 		});
 	}
 
