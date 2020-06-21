@@ -80,7 +80,9 @@ io.on('connection', (socket) => {
 						let clientNames = [];
 						clients.map((client) => {
 							let name = sockClients.find((sockClient) => sockClient.sockId === client);
-							clientNames.push(name);
+							if(name !== undefined)
+								clientNames.push(name);
+
 						});
 						console.log(clientNames);
 						console.log('Joined room: ' + data.room);
