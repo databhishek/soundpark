@@ -96,11 +96,11 @@ export class Header extends Component {
 
 	leaveRoom = async () => {
 		try {
-			await Axios.get('/leaveRoom', {
-				params: { roomCode: this.state.room.code }
-			});
-			await sessionStorage.removeItem('roomCode');
-			this.props.socket.emit('leave_room', this.state.room.code);
+			// await Axios.get('/leaveRoom', {
+			// 	params: { roomCode: this.state.room.code }
+			// });
+			sessionStorage.removeItem('roomCode');
+			this.props.socket.emit('leave_room', { name: localStorage.getItem('dispName'), room: this.state.room.code });
 		} catch (err) {
 			console.log(err);
 		}

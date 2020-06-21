@@ -37,17 +37,17 @@ module.exports = (io) => {
 			let room = await db.Room.find({ roomCode: req.query.roomCode });
 			if (!room.length) return res.status(400).send('Invalid room code.');
 			console.log('Joining room: ' + req.user.displayName);
-			await db.Room.findOneAndUpdate(
-				{ roomCode: req.query.roomCode, 'users.id': { $ne: req.user.id } },
-				{
-					$push: {
-						users: {
-							id: req.user.id,
-							name: req.user.displayName
-						}
-					}
-				}
-			);
+			// await db.Room.findOneAndUpdate(
+			// 	{ roomCode: req.query.roomCode, 'users.id': { $ne: req.user.id } },
+			// 	{
+			// 		$push: {
+			// 			users: {
+			// 				id: req.user.id,
+			// 				name: req.user.displayName
+			// 			}
+			// 		}
+			// 	}
+			// );
 			spotify.join(req.user.accessToken, req.query.roomCode, req.user.currentDevice);
 			return res.status(200).send(room[0]);
 		} catch (err) {
@@ -57,17 +57,17 @@ module.exports = (io) => {
 
 	exp.leaveRoom = async (req, res) => {
 		try {
-			await db.Room.findOneAndUpdate(
-				{ roomCode: req.query.roomCode },
-				{
-					$pull: {
-						users: {
-							id: req.user.id,
-							name: req.user.displayName
-						}
-					}
-				}
-			);
+			// await db.Room.findOneAndUpdate(
+			// 	{ roomCode: req.query.roomCode },
+			// 	{
+			// 		$pull: {
+			// 			users: {
+			// 				id: req.user.id,
+			// 				name: req.user.displayName
+			// 			}
+			// 		}
+			// 	}
+			// );
 			return res.status(200).send('Left room: ' + req.user.displayName);
 		} catch (err) {
 			return res.send(err);

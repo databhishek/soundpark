@@ -69,7 +69,7 @@ module.exports = (passport) => {
 
 			// Successful authentication, redirect home.
 			console.log('Successful login.');
-			res.redirect('https://soundpark.live/?loggedIn=true');
+			res.redirect('https://soundpark.live/?loggedIn=true&name=' + req.user.displayName);
 		} catch (e) {
 			console.log(e);
 		}

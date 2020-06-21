@@ -71,12 +71,15 @@ class Home extends Component {
 
 	UNSAFE_componentWillMount() {
 		let loggedIn = new URLSearchParams(this.props.location.search).get('loggedIn');
+		let dispName = new URLSearchParams(this.props.location.search).get('name');
 		if (loggedIn === 'true') {
 			localStorage.setItem('loggedIn', 'true');
+			localStorage.setItem('dispName', dispName);
 			window.history.replaceState({}, document.title, '/');
 		}
 		if (loggedIn === 'false') {
 			localStorage.setItem('loggedIn', 'false');
+			localStorage.removeItem('dispName');
 			window.history.replaceState({}, document.title, '/');
 		}
 	}
@@ -173,7 +176,7 @@ class Home extends Component {
 						console.log(resp.data);
 						this.setState({ roomCode: resp.data });
 						sessionStorage.setItem('roomCode', this.state.roomCode);
-						this.props.socket.emit('join_room', this.state.roomCode);
+						this.props.socket.emit('join_room', { name: localStorage.getItem('dispName'), room: this.state.roomCode });
 					}
 					await this.setDevice();
 					await Axios.get('/joinRoom', {

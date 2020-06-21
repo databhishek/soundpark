@@ -47,12 +47,12 @@ const RoomSchema = new mongoose.Schema({
 	roomName: String,
 	roomCode: String,
 	queue: [ QueueSchema ],
-	users: [
-		{
-			id: String,
-			name: String
-		}
-	],
+	// users: [
+	// 	{
+	// 		id: String,
+	// 		name: String
+	// 	}
+	// ],
 	changedat: Number
 });
 
