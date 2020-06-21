@@ -45,13 +45,22 @@ class Player extends Component {
 		let room = new URLSearchParams(this.props.location.search).get('room');
 		if (room) {
 			window.history.replaceState({}, document.title, '/');
-			toast.success('Room Code: ' + room + '\nCopied to clipboard!', {
+			toast.success('Room Code: ' + room, {
 				toastId: 'createRoom',
 				position: 'top-center',
 				autoClose: false,
 				closeOnClick: false,
 				pauseOnHover: true,
 				draggable: false,
+				limit: 1
+			});
+			toast.success('Copied to clipboard!', {
+				toastId: 'toClipboard',
+				position: 'top-center',
+				autoClose: 1500,
+				closeOnClick: true,
+				pauseOnHover: false,
+				draggable: true,
 				limit: 1
 			});
 		}
