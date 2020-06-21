@@ -101,7 +101,7 @@ io.on('connection', (socket) => {
 
 		// Remove user from room list
 		sockClients = sockClients.filter((sockClient) => {
-			return sockClient.name !== data.name
+			return sockClient.name !== data.name;
 		});
 
 		io.in(data.room).clients((err, clients) => {
