@@ -22,6 +22,12 @@ button {
 	width: 100vw;
 	background: $bg;
 	color: white;
+	overflow: scroll;
+	scrollbar-width: none;
+	&::-webkit-scrollbar {
+		display: none;
+	}
+	-ms-overflow-style: none;
 }
 
 .main-nav {
@@ -58,8 +64,9 @@ button {
 	border-radius: 5px;
 	text-align: center;
 	padding: 10px 5px;
-	width: 250px;
-	height: 400px;
+	width: 200px;
+	height: auto;
+	max-height: 300px;
 	overflow: scroll;
 	scrollbar-width: none;
 	font-family: 'Muli' sans-serif;
@@ -69,21 +76,15 @@ button {
 	-ms-overflow-style: none;
 
 	li {
-		font-size: 20px;
+		font-size: 18px;
 		color: white;
-		padding-bottom: 5px;
-		text-shadow: 1px 1px 5px #fff, 1px 1px 5px #ccc;
-
-		&:nth-child(odd) {
-			color: yellow;
-			text-shadow: 1px 1px 5px yellow, 1px 1px 5px #ccc;
-		}
+		padding-bottom: 10px;
 	}
 
 	.list-title {
+		color: gold;
 		margin-top: -3px;
-		font-size: 22px;
-		color: white;
+		font-size: 20px;
 		text-shadow: none;
 	}
 }
@@ -94,8 +95,9 @@ button {
 	border-radius: 5px;
 	text-align: center;
 	padding: 10px 5px;
-	width: 250px;
-	height: 400px;
+	width: 200px;
+	height: auto;
+	max-height: 300px;
 	overflow: scroll;
 	scrollbar-width: none;
 	font-family: 'Muli' sans-serif;
@@ -106,7 +108,7 @@ button {
 
 	li {
 		width: 100%;
-		height: 20px;
+		font-size: 18px;
 		cursor: pointer;
 		color: white;
 		margin-bottom: 20px;
@@ -114,8 +116,8 @@ button {
 
 	.list-title {
 		margin-top: -3px;
-		font-size: 22px;
-		color: white;
+		font-size: 20px;
+		color: gold;
 		text-shadow: none;
 	}
 }
@@ -243,7 +245,7 @@ button {
 			.track-artist {
 				color: $secondaryText;
 				margin-top: -1em;
-				margin-left: -1.05em;
+				margin-left: -1.1em;
 			}
 
 			.added-by {
@@ -310,7 +312,7 @@ button {
 		flex-direction: row;
 		justify-content: space-between;
 		background: $bg;
-		border-bottom: 2px ridge $green;
+		// border-bottom: 2px ridge $green;
 		padding-top: 5px;
 		height: 45px;
 		width: 100vw;
@@ -327,7 +329,7 @@ button {
 			.leave-icon,
 			.logout-icon,
 			.devices-icon {
-				font-size: 1.5rem;
+				font-size: 1.4rem;
 				padding: 2px 7px;
 				&:hover {
 					transform: scale(1.1);

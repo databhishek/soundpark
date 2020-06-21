@@ -20,7 +20,7 @@ Axios.interceptors.response.use(
 	},
 	(error) => {
 		if (error.response.status === 400) {
-			toast.error('Invalid room code', {
+			toast.error('Invalid room code.', {
 				toastId: 'invalidRoomCode',
 				position: 'top-center',
 				autoClose: 3000,
@@ -34,7 +34,7 @@ Axios.interceptors.response.use(
 			window.location.href = '/?loggedIn=false';
 		}
 		if (error.response.status === 403) {
-			toast.error('Playback supported only on Premium accounts', {
+			toast.error('Playback supported only on Premium accounts.', {
 				toastId: 'premium',
 				position: 'top-center',
 				autoClose: 3000,
@@ -45,7 +45,7 @@ Axios.interceptors.response.use(
 			});
 		}
 		if (error.response.status === 404) {
-			toast.error('Please open Spotify on your device and press Play', {
+			toast.error('Please open Spotify on your device and press Play.', {
 				toastId: 'notFound',
 				position: 'top-center',
 				autoClose: 10000,
@@ -93,10 +93,6 @@ class Home extends Component {
 				pauseOnHover: true,
 				draggable: true
 			});
-		}
-
-		if (sessionStorage.getItem('roomCode')) {
-			this.props.socket.emit('join_room', sessionStorage.getItem('roomCode'));
 		}
 	}
 
@@ -184,6 +180,7 @@ class Home extends Component {
 						params: { roomCode: this.state.roomCode }
 					});
 					console.log('Joined room ' + this.state.roomCode);
+					await navigator.clipboard.writeText(this.state.roomCode);
 					window.location.href = '/player?room=' + this.state.roomCode;
 				}
 			} else {
@@ -234,7 +231,7 @@ class Home extends Component {
 					</a>
 				</div>
 			);
-		let Form = 
+		let Form =
 			localStorage.getItem('loggedIn') === 'true' ? (
 				<form className='room-form' onSubmit={this.handleSubmit}>
 					<input type='text' placeholder='Enter room to join.' name='roomCode' />
@@ -242,7 +239,9 @@ class Home extends Component {
 						&rarr;
 					</button>
 				</form>
-			) : (<div></div>)
+			) : (
+				<div />
+			);
 		return (
 			<div>
 				<div className='home-container'>

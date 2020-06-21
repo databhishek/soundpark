@@ -130,13 +130,6 @@ class Player extends Component {
 				queue: data
 			});
 		});
-		// this.getNowPlaying();
-		// window.addEventListener('beforeunload', function(e){
-		// 	var confirmationMessage = 'o/';
-
-		// 	(e || window.event).returnValue = confirmationMessage; //Gecko + IE
-		// 	return confirmationMessage; //Webkit, Safari, Chrome
-		// });
 	}
 
 	getNowPlaying = async () => {
@@ -283,7 +276,9 @@ class Player extends Component {
 							<p className='track-title'>{song.trackName}</p>
 							<p className='track-artist'>{song.artist}</p>
 						</div>
-						<p className='added-by'>{song.addedBy}</p>
+						<p className='added-by' title='Added By'>
+							{song.addedBy}
+						</p>
 					</li>
 				))}
 			</ul>
@@ -314,7 +309,14 @@ class Player extends Component {
 						<div className='queue-container'>
 							<div className='up-next'>
 								<div className='title'>Up Next</div>
-								<Popup modal closeOnDocumentClick trigger={<button className='add' title='Add to Queue'>+</button>}>
+								<Popup
+									modal
+									closeOnDocumentClick
+									trigger={
+										<button className='add' title='Add to Queue'>
+											+
+										</button>
+									}>
 									{(close) => (
 										<div>
 											<form className='search-form' autocomplete='off' onSubmit={this.handleSearch}>

@@ -119,7 +119,6 @@ $bg2: #333432;
 		font-size: 24px;
 		width: 100%;
 		text-align: center;
-		text-shadow: 1px 1px 7px #fff, 1px 1px 7px #ccc;
 		padding: 20px 5px;
 	}
 
@@ -133,7 +132,7 @@ $bg2: #333432;
 			color: white;
 			border: none;
 			border-radius: 5px;
-			height: 3vh;
+			height: 4vh;
 			background: $bg2;
 			margin: auto;
 			padding-left: 5px;
@@ -180,11 +179,9 @@ $bg2: #333432;
 			}
 		}
 	}
-
 }
 
 .main-footer {
-
 	display: flex;
 	flex-direction: row;
 	justify-content: space-between;
@@ -197,7 +194,7 @@ $bg2: #333432;
 	color: #fff;
 	.contact-us {
 		font-size: 15px;
-		margin-top: 15px;
+		margin-top: 10px;
 		padding-left: 50px;
 		font-family: 'Muli', sans-serif;
 		&:hover {
@@ -211,7 +208,7 @@ $bg2: #333432;
 			float: left;
 			padding-right: 15px;
 		}
-	
+
 		.spotify-logo {
 			margin-top: 15px;
 			height: 20px;
@@ -243,5 +240,9 @@ $bg2: #333432;
 			width: 80px;
 			height: 30px;
 		}
+	}
+
+	.contact-us {
+		margin-bottom: 10px;
 	}
 }
