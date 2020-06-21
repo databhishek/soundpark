@@ -72,7 +72,7 @@ io.on('connection', (socket) => {
 					sockId: socket.id,
 					name: data.name
 				});
-				let dbData = db.Room.find({ roomCode: data.room });
+				let dbData = await db.Room.find({ roomCode: data.room });
 				io.in(data.room).clients((err, clients) => {
 					if (err) console.log(err);
 					else {
@@ -98,10 +98,12 @@ io.on('connection', (socket) => {
 	// Leave Room
 	socket.on('leave_room', (data) => {
 		socket.leave(data.room);
+
 		// Remove user from room list
 		sockClients = sockClients.filter((sockClient) => {
 			return sockClient.name !== data.name
 		});
+
 		io.in(data.room).clients((err, clients) => {
 			if (err) console.log(err);
 			else {
