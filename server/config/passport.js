@@ -2,12 +2,14 @@ const SpotifyStrategy = require('passport-spotify').Strategy;
 const db = require('./conn');
 
 module.exports = (passport) => {
-	passport.serializeUser((User, done) => {
-		return done(null, User);
+	passport.serializeUser((user, done) => {
+		return done(null, user.id);
 	});
 
-	passport.deserializeUser((User, done) => {
-		return done(null, User);
+	passport.deserializeUser((id, done) => {
+		db.User.find({ id: id }, (err, user) => {
+			return done(err, user[0]);
+		});
 	});
 
 	passport.use(
@@ -15,28 +17,28 @@ module.exports = (passport) => {
 			{
 				clientID: process.env.SPOTIFY_CLIENT_ID,
 				clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-				callbackURL: process.env.MODE === 'PROD' ? process.env.SERVER_URI + 'api/callback' : 'http://localhost:8888/callback'
+				callbackURL: 'https://soundpark.live/api/callback'
 			},
 			(accessToken, refreshToken, expires_in, profile, done) => {
 				db.User.findOneAndUpdate(
 					{
-						spotifyID: profile.id
+						id: profile.id
 					},
 					{
-						spotifyAccessToken: accessToken,
-						spotifyRefreshToken: refreshToken
+						username: profile.username,
+						displayName: profile.displayName,
+						profileUrl: profile.profileUrl,
+						subscription: profile.product,
+						accessToken: accessToken,
+						refreshToken: refreshToken,
+						currentDevice: ''
 					},
 					{
 						upsert: true
 					},
-					(err) => {
+					(err, data) => {
 						if (err) console.log(err);
-						else
-							return done(null, {
-								profile: profile,
-								accessToken: accessToken,
-								refreshToken: refreshToken
-							});
+						else return done(null, data);
 					}
 				);
 			}

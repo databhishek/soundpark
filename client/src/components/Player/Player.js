@@ -1,96 +1,171 @@
 import React, { Component } from 'react';
-import cover from '../../assets/cover.png';
 import Axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import Popup from 'reactjs-popup';
+import { faForward, faPause, faPlay } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import 'react-toastify/dist/ReactToastify.css';
+import cover from '../../assets/cover.png';
+import Header from '../Header';
+import Footer from '../Footer';
+import SocketContext from '../../Socket';
 import './Player.scss';
-import io from 'socket.io-client';
-Axios.defaults.baseURL = 'http://13.233.142.76/api';
+
+const baseURL = 'https://soundpark.live/api';
+// const baseURL = 'http://localhost:8888';
+
+// Axios config
+Axios.defaults.baseURL = baseURL;
 Axios.defaults.headers['Content-Type'] = 'application/json';
 Axios.defaults.withCredentials = true;
 
-export class Player extends Component {
+class Player extends Component {
 	constructor(props) {
 		super(props);
 
 		this.state = {
 			nowPlaying: {
-				name: 'Queue is empty! Add something to get started.',
+				name: 'Nothing playing.',
+				artist: 'N/A',
 				albumArt: cover
 			},
 			searchValue: '',
-			searchResult: {
-				searchedYet: false,
-				id: '',
-				name: '',
-				artist: '',
-				album: '',
-				uri: '',
-				albumArt: ''
+			searchedYet: false,
+			searchResult: [],
+			room: {
+				name: 'No Room',
+				code: sessionStorage.getItem('roomCode')
 			},
-			room: sessionStorage.getItem('roomCode'),
-			queue: []
+			queue: [],
+			users: []
 		};
 	}
 
 	componentDidMount() {
-		const socket = io('http://13.233.142.76', {
-			secure: true,
-			rejectUnauthorized: true,
-			path: '/rooms/socket.io'
-		});
-		socket.on('joined_room', (data) => {
-			if (data !== null) {
+		let room = new URLSearchParams(this.props.location.search).get('room');
+		if (room) {
+			window.history.replaceState({}, document.title, '/');
+			toast.success('Room Code: ' + room, {
+				toastId: 'createRoom',
+				position: 'top-center',
+				autoClose: false,
+				closeOnClick: false,
+				pauseOnHover: true,
+				draggable: false,
+				limit: 1
+			});
+			toast.success('Copied to clipboard!', {
+				toastId: 'toClipboard',
+				position: 'top-center',
+				autoClose: 1500,
+				closeOnClick: true,
+				pauseOnHover: false,
+				draggable: true,
+				limit: 1
+			});
+		}
+		if (!this.state.room.code) {
+			window.location.href = '/?joinRoom=false';
+		}
+		this.props.socket.emit('join_room', { name: localStorage.getItem('dispName'), room: this.state.room.code });
+		this.props.socket.on('joined_room', (data) => {
+			if (data.queue.length) {
 				this.setState({
-					queue: data
+					nowPlaying: {
+						name: data.queue[0].trackName,
+						artist: data.queue[0].artist,
+						albumArt: data.queue[0].albumArt
+					},
+					queue: data.queue,
+					room: {
+						name: data.roomName,
+						code: sessionStorage.getItem('roomCode')
+					},
+					users: data.users
+				});
+			} else {
+				this.setState({
+					room: {
+						name: data.roomName,
+						code: sessionStorage.getItem('roomCode')
+					},
+					users: data.users
 				});
 			}
 		});
-		socket.emit('join_room', this.state.room);
-		socket.on('currently_playing', async (data) => {
-			console.log('Song change event.');
-			if (data.song !== null) {
-				if (data.playedNext === true) {
-					await Axios.post('/playNextReturns', { id: data.id });
-				}
-				let q = this.state.queue.shift();
-				console.log('Remove song: ' + q);
+		this.props.socket.on('left_room', (data) => {
+			this.setState({
+				users: data
+			});
+		});
+		this.props.socket.on('currently_playing', async (data) => {
+            // console.log('Song change event.');
+			if (data) {
+				await Axios.post('/queueReturns', { room: this.state.room.code });
+				this.state.queue.shift();
+				let q = this.state.queue;
 				this.setState({
 					nowPlaying: {
-						name: data.song.trackName,
-						albumArt: data.song.albumArt,
-						queue: q
+						name: data.trackName,
+						artist: data.artist,
+						albumArt: data.albumArt
+					},
+					queue: q
+				});
+			} else
+				this.setState({
+					nowPlaying: {
+						name: 'Nothing playing.',
+						artist: 'N/A',
+						albumArt: cover
+					},
+					queue: []
+				});
+		});
+		this.props.socket.on('added_to_queue', async (data) => {
+            // console.log('Add to queue event.');
+			// console.log(data);
+			if (data.length === 1) {
+				await Axios.post('/queueReturns', { room: this.state.room.code });
+				this.setState({
+					nowPlaying: {
+						name: data[0].trackName,
+						artist: data[0].artist,
+						albumArt: data[0].albumArt
 					}
 				});
 			}
-		});
-		socket.on('add_to_queue', async (data) => {
-			console.log('Add to queue event.');
-			let resp = await Axios.post('/queueReturns', {
-				room: this.state.room,
-				id: data.id
+			this.setState({
+				queue: data
 			});
-			console.log(resp);
-			this.getNowPlaying();
 		});
-		this.getNowPlaying();
+		window.addEventListener('beforeunload', (e) => {
+			if (sessionStorage.getItem('roomCode')) this.props.socket.emit('leave_room', { name: localStorage.getItem('dispName'), room: this.state.room.code });
+		});
 	}
 
 	getNowPlaying = async () => {
 		try {
-			console.log('Fetched currently playing.');
+            // console.log('Fetched currently playing.');
 			let resp = await Axios.get('/currentlyPlaying');
 			resp = resp.data;
 			if (resp.item) {
+				// sessionStorage.setItem('currentSong', resp.item.name);
+				// sessionStorage.setItem('currentArtist', resp.item.artists[0].external_urls.name);
+				// sessionStorage.setItem('currentArt', resp.item.album.images[0].url);
 				this.setState({
 					nowPlaying: {
 						name: resp.item.name,
+						artist: resp.item.artists[0].external_urls.name,
 						albumArt: resp.item.album.images[0].url
 					}
 				});
 			} else {
 				this.setState({
 					nowPlaying: {
-						name: 'Nothing is playing!',
-						albumArt: ''
+						name: 'Nothing playing.',
+						artist: 'N/A',
+						albumArt: cover
 					}
 				});
 			}
@@ -102,52 +177,57 @@ export class Player extends Component {
 	searchSong = async () => {
 		try {
 			const searchValue = this.state.searchValue;
-			console.log('Searched: ' + searchValue);
+            // console.log('Searched: ' + searchValue);
 			let resp = await Axios.get('/searchTrack', {
 				params: {
 					searchValue: searchValue
 				}
 			});
 			resp = resp.data;
-			console.log(resp);
+			let search = [];
+			for (let i = 0; i < 10 && i < resp.tracks.items.length; i++) {
+				search.push({
+					id: resp.tracks.items[i].id,
+					name: resp.tracks.items[i].name,
+					album: resp.tracks.items[i].album.name,
+					artist: resp.tracks.items[i].artists[0].name,
+					uri: resp.tracks.items[i].uri,
+					albumArt: resp.tracks.items[i].album.images[0]
+				});
+			}
+			// console.log(search);
 			this.setState({
-				searchResult: {
-					searchedYet: true,
-					id: resp.tracks.items[0].id,
-					name: resp.tracks.items[0].name,
-					album: resp.tracks.items[0].album.name,
-					artist: resp.tracks.items[0].artists[0].name,
-					uri: resp.tracks.items[0].uri,
-					albumArt: resp.tracks.items[0].album.images[0]
-				}
+				searchedYet: true,
+				searchResult: search
 			});
 		} catch (err) {
 			console.log(err);
 		}
 	};
 
-	addToQueue = async () => {
+	addToQueue = async (song) => {
 		try {
-			const searchResult = this.state.searchResult;
-			let track = {
-				id: searchResult.id,
-				name: searchResult.name,
-				artist: searchResult.artist,
-				album: searchResult.album,
-				uri: searchResult.uri,
-				albumArt: searchResult.albumArt
-			};
 			let roomCode = sessionStorage.getItem('roomCode');
 			let resp = await Axios.post('/addToQueue', {
 				roomCode,
-				track
+				song
 			});
-			console.log(resp.data);
+			// console.log(resp.data);
 			this.setState({
+				searchedYet: false,
+				searchResult: [],
 				queue: resp.data
 			});
-			console.log('Added to queue.');
-			this.getNowPlaying();
+            // console.log('Added to queue.');
+			toast.success('Added to queue.', {
+				toastId: 'toQueue',
+				position: 'top-center',
+				autoClose: 2000,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+				limit: 1
+			});
 		} catch (err) {
 			console.log(err);
 		}
@@ -157,21 +237,35 @@ export class Player extends Component {
 		try {
 			let roomCode = sessionStorage.getItem('roomCode');
 			let resp = await Axios.post('/playNext', { roomCode });
-			console.log(resp);
+			// console.log(resp);
 		} catch (err) {
 			console.log(err);
 		}
 	};
 
-	playPause = async () => {
+	play = async () => {
 		try {
 			let roomCode = sessionStorage.getItem('roomCode');
-			let resp = await Axios.get('/playPause', {
+			let resp = await Axios.get('/play', {
 				params: {
 					roomCode: roomCode
 				}
 			});
-			console.log(resp);
+			// console.log(resp);
+		} catch (err) {
+			console.log(err);
+		}
+	};
+
+	pause = async () => {
+		try {
+			let roomCode = sessionStorage.getItem('roomCode');
+			let resp = await Axios.get('/pause', {
+				params: {
+					roomCode: roomCode
+				}
+			});
+			// console.log(resp);
 		} catch (err) {
 			console.log(err);
 		}
@@ -183,25 +277,20 @@ export class Player extends Component {
 	};
 
 	render() {
-		const { searchedYet, name, album, artist } = this.state.searchResult;
+		let search = this.state.searchResult;
 		const { nowPlaying, queue } = this.state;
-		let result;
-		if (searchedYet) {
-			result = (
-				<div className='search-res'>
-					<p>Song: {name}</p>
-					<p>Artist: {artist}</p>
-					<p>Album: {album}</p>
-					<button onClick={this.addToQueue}>Add</button>
-				</div>
-			);
-		}
 
 		let queueListItems = (
 			<ul className='queue-list'>
 				{queue.map((song) => (
 					<li key={song.uri}>
-						{song.trackName} - {song.artist}
+						<div>
+							<p className='track-title'>{song.trackName}</p>
+							<p className='track-artist'>{song.artist}</p>
+						</div>
+						<p className='added-by' title='Added By'>
+							{song.addedBy}
+						</p>
 					</li>
 				))}
 			</ul>
@@ -209,30 +298,71 @@ export class Player extends Component {
 
 		return (
 			<div>
-				<div className='player-container'>
-					<h3>Now Playing</h3> <h3>{nowPlaying.name}</h3>
-					<img className='album-art' src={nowPlaying.albumArt} alt='albumArt' />
-					<button className='control-btns' onClick={this.playPause}>
-						Play/Pause
-					</button>
-					<button className='control-btns' onClick={this.playNext}>
-						Next
-					</button>
-					<form onSubmit={this.handleSearch}>
-						<input type='text' placeholder='Search for a song...' name='searchValue' />
-						<button className='search-btn' type='submit'>
-							&rarr;
-						</button>
-					</form>
-					{result}
-				</div>
-				<div className='queue-container'>
-					<h2> QUEUE </h2>
-					{queueListItems}
+				<ToastContainer />
+				<div className='main-container'>
+					<Header />
+					<div className='container'>
+						<div className='player-container'>
+							<img className='album-art' src={nowPlaying.albumArt} alt='albumArt' />
+							<div className='title'>{nowPlaying.name}</div>
+							<div className='artist'>{nowPlaying.artist}</div>
+							<div className='controls'>
+								<button onClick={this.pause}>
+									<FontAwesomeIcon icon={faPause} className='fa' size='2x' />
+								</button>
+								<button onClick={this.play}>
+									<FontAwesomeIcon icon={faPlay} className='fa' size='2x' />
+								</button>
+								<button onClick={this.playNext}>
+									<FontAwesomeIcon icon={faForward} className='fa' size='2x' />
+								</button>
+							</div>
+						</div>
+						<div className='queue-container'>
+							<div className='up-next'>
+								<div className='title'>Up Next</div>
+								<Popup
+									modal
+									closeOnDocumentClick
+									trigger={
+										<button className='add' title='Add to Queue'>
+											+
+										</button>
+									}>
+									{(close) => (
+										<div>
+											<form className='search-form' autocomplete='off' onSubmit={this.handleSearch}>
+												<input type='text' placeholder='Search for a song...' name='searchValue' />
+											</form>
+											<ul className='search-res'>
+												{search.map((song) => (
+													<li
+														key={song.id}
+														onClick={() => {
+															close();
+															this.addToQueue(song);
+														}}>
+														<p className='title'>{song.name}</p>
+														<p className='artist'>
+															{song.album} - {song.artist}
+														</p>
+													</li>
+												))}
+											</ul>
+										</div>
+									)}
+								</Popup>
+							</div>
+							{queueListItems}
+						</div>
+					</div>
+					<Footer />
 				</div>
 			</div>
 		);
 	}
 }
 
-export default Player;
+const PlayerwithSocket = (props) => <SocketContext.Consumer>{(socket) => <Player {...props} socket={socket} />}</SocketContext.Consumer>;
+
+export default PlayerwithSocket;
