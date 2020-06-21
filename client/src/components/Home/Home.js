@@ -105,7 +105,7 @@ class Home extends Component {
 			resp = resp.data;
 			if (resp.length > 0) {
 				sessionStorage.setItem('deviceID', resp[0].id);
-				console.log(resp[0].id);
+				// console.log(resp[0].id);
 			}
 		} catch (err) {
 			console.log(err);
@@ -143,7 +143,7 @@ class Home extends Component {
 					});
 					if (resp.status === 200) {
 						sessionStorage.setItem('roomCode', roomCode);
-						console.log('Joined room ' + roomCode);
+						// console.log('Joined room ' + roomCode);
 						window.location.href = '/player';
 					}
 				}
@@ -173,7 +173,7 @@ class Home extends Component {
 				} else {
 					let resp = await Axios.post('/createRoom', { roomName });
 					if (resp.status === 200) {
-						console.log(resp.data);
+						// console.log(resp.data);
 						this.setState({ roomCode: resp.data });
 						sessionStorage.setItem('roomCode', this.state.roomCode);
 						this.props.socket.emit('join_room', { name: localStorage.getItem('dispName'), room: this.state.roomCode });
@@ -182,7 +182,7 @@ class Home extends Component {
 					await Axios.get('/joinRoom', {
 						params: { roomCode: this.state.roomCode }
 					});
-					console.log('Joined room ' + this.state.roomCode);
+					// console.log('Joined room ' + this.state.roomCode);
 					await navigator.clipboard.writeText(this.state.roomCode);
 					window.location.href = '/player?room=' + this.state.roomCode;
 				}

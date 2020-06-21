@@ -93,7 +93,7 @@ class Player extends Component {
 			});
 		});
 		this.props.socket.on('currently_playing', async (data) => {
-			console.log('Song change event.');
+            // console.log('Song change event.');
 			if (data) {
 				await Axios.post('/queueReturns', { room: this.state.room.code });
 				this.state.queue.shift();
@@ -117,8 +117,8 @@ class Player extends Component {
 				});
 		});
 		this.props.socket.on('added_to_queue', async (data) => {
-			console.log('Add to queue event.');
-			console.log(data);
+            // console.log('Add to queue event.');
+			// console.log(data);
 			if (data.length === 1) {
 				await Axios.post('/queueReturns', { room: this.state.room.code });
 				this.setState({
@@ -137,7 +137,7 @@ class Player extends Component {
 
 	getNowPlaying = async () => {
 		try {
-			console.log('Fetched currently playing.');
+            // console.log('Fetched currently playing.');
 			let resp = await Axios.get('/currentlyPlaying');
 			resp = resp.data;
 			if (resp.item) {
@@ -168,7 +168,7 @@ class Player extends Component {
 	searchSong = async () => {
 		try {
 			const searchValue = this.state.searchValue;
-			console.log('Searched: ' + searchValue);
+            // console.log('Searched: ' + searchValue);
 			let resp = await Axios.get('/searchTrack', {
 				params: {
 					searchValue: searchValue
@@ -186,7 +186,7 @@ class Player extends Component {
 					albumArt: resp.tracks.items[i].album.images[0]
 				});
 			}
-			console.log(search);
+			// console.log(search);
 			this.setState({
 				searchedYet: true,
 				searchResult: search
@@ -203,13 +203,13 @@ class Player extends Component {
 				roomCode,
 				song
 			});
-			console.log(resp.data);
+			// console.log(resp.data);
 			this.setState({
 				searchedYet: false,
 				searchResult: [],
 				queue: resp.data
 			});
-			console.log('Added to queue.');
+            // console.log('Added to queue.');
 			toast.success('Added to queue.', {
 				toastId: 'toQueue',
 				position: 'top-center',
@@ -228,7 +228,7 @@ class Player extends Component {
 		try {
 			let roomCode = sessionStorage.getItem('roomCode');
 			let resp = await Axios.post('/playNext', { roomCode });
-			console.log(resp);
+			// console.log(resp);
 		} catch (err) {
 			console.log(err);
 		}
@@ -242,7 +242,7 @@ class Player extends Component {
 					roomCode: roomCode
 				}
 			});
-			console.log(resp);
+			// console.log(resp);
 		} catch (err) {
 			console.log(err);
 		}
@@ -256,7 +256,7 @@ class Player extends Component {
 					roomCode: roomCode
 				}
 			});
-			console.log(resp);
+			// console.log(resp);
 		} catch (err) {
 			console.log(err);
 		}

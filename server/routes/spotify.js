@@ -205,7 +205,7 @@ module.exports = (io) => {
 				headers: { Authorization: 'Bearer ' + req.user.accessToken }
 			});
 			resp = resp.data.devices;
-			console.log(resp);
+			// console.log(resp);
 			resp.forEach((ele, idx, arr) => {
 				if (ele.is_restricted) arr.splice(idx, 1);
 			});

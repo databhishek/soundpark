@@ -45,7 +45,7 @@ export class Header extends Component {
 			resp = resp.data;
 			if (resp.length > 0) {
 				sessionStorage.setItem('deviceID', resp[0].id);
-				console.log(resp[0].id);
+				// console.log(resp[0].id);
 			}
 			this.setState({
 				devices: resp
