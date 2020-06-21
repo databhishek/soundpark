@@ -45,7 +45,7 @@ class Player extends Component {
 		let room = new URLSearchParams(this.props.location.search).get('room');
 		if (room) {
 			window.history.replaceState({}, document.title, '/');
-			toast.success('Room Code: ' + room, {
+			toast.success('Room Code: ' + room + '\nCopied to clipboard!', {
 				toastId: 'createRoom',
 				position: 'top-center',
 				autoClose: false,
@@ -131,7 +131,6 @@ class Player extends Component {
 			});
 		});
 		window.addEventListener('beforeunload', (e) => {
-			e.preventDefault();
 			if (sessionStorage.getItem('roomCode')) this.props.socket.emit('leave_room', { name: localStorage.getItem('dispName'), room: this.state.room.code });
 		});
 	}
