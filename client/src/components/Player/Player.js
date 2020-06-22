@@ -236,8 +236,7 @@ class Player extends Component {
 	playNext = async () => {
 		try {
 			let roomCode = sessionStorage.getItem('roomCode');
-			let resp = await Axios.post('/playNext', { roomCode });
-			// console.log(resp);
+			await Axios.post('/playNext', { roomCode });
 		} catch (err) {
 			console.log(err);
 		}
@@ -246,12 +245,11 @@ class Player extends Component {
 	play = async () => {
 		try {
 			let roomCode = sessionStorage.getItem('roomCode');
-			let resp = await Axios.get('/play', {
+			await Axios.get('/play', {
 				params: {
 					roomCode: roomCode
 				}
 			});
-			// console.log(resp);
 		} catch (err) {
 			console.log(err);
 		}
@@ -260,12 +258,11 @@ class Player extends Component {
 	pause = async () => {
 		try {
 			let roomCode = sessionStorage.getItem('roomCode');
-			let resp = await Axios.get('/pause', {
+			await Axios.get('/pause', {
 				params: {
 					roomCode: roomCode
 				}
 			});
-			// console.log(resp);
 		} catch (err) {
 			console.log(err);
 		}

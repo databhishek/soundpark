@@ -1,3 +1,7 @@
 .App {
 	font-family: 'Muli', sans-serif;
 }
+
+button::-moz-focus-inner {
+	border: none;
+}
