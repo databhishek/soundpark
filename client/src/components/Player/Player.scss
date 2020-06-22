@@ -124,11 +124,10 @@ button {
 
 .container {
 	display: flex;
-	margin-top: 25px;
 	flex-direction: column;
 	justify-content: space-around;
 	align-items: center;
-	overflow: scroll;
+	// overflow: scroll;
 	scrollbar-width: none;
 	&::-webkit-scrollbar {
 		display: none;
@@ -150,9 +149,11 @@ button {
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
+	margin-top: 10px;
 	align-items: center;
 	width: 75vw;
-	height: 70vh;
+	margin-bottom: 20px;
+	height: 100%;
 
 	.album-art {
 		width: 300px;
