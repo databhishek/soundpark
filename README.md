@@ -1,4 +1,3 @@
-# Soundpark
 <p align="center">
   <img src="https://github.com/databhishek/soundpark/blob/master/client/src/assets/banner.png">
 </p>
