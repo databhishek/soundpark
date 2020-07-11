@@ -14,7 +14,6 @@ module.exports = (passport) => {
 				'user-read-playback-state',
 				'user-modify-playback-state',
 				'user-read-currently-playing',
-				'playlist-modify-public',
 				'user-read-playback-position'
 			],
 			showDialog: true
